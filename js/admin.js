@@ -53,7 +53,7 @@ async function logout() {
 function loadAdminData() {
   fillAdminFormSelects();
   clearForm();
-  bindScreenshotPreview("editScreenshotFile", "editScreenshotPreview", "editScreenshotUrl");
+  bindScreenshotPreview("editScreenshotUrl", "editScreenshotPreview");
   startLogsStream();
 
   if (bugsUnsub) bugsUnsub();
@@ -121,7 +121,6 @@ function clearForm() {
   document.getElementById("editDescription").value = "";
   document.getElementById("editSteps").value = "";
   document.getElementById("editScreenshotUrl").value = "";
-  document.getElementById("editScreenshotFile").value = "";
   document.getElementById("editScreenshotPreview").innerHTML = "";
   document.getElementById("editCategory").value = "other";
   document.getElementById("editPriority").value = "medium";
@@ -139,7 +138,6 @@ function populateForm(b) {
   document.getElementById("editDescription").value = b.description || "";
   document.getElementById("editSteps").value = b.steps || "";
   document.getElementById("editScreenshotUrl").value = b.screenshot || "";
-  document.getElementById("editScreenshotFile").value = "";
   document.getElementById("editCategory").value = b.category || "other";
   document.getElementById("editPriority").value = b.priority || "medium";
   document.getElementById("editStatus").value = b.status || "open";
@@ -166,12 +164,7 @@ async function saveBug(e) {
   submitBtn.disabled = true;
 
   try {
-    let screenshot = document.getElementById("editScreenshotUrl").value.trim();
-    const file = document.getElementById("editScreenshotFile").files?.[0];
-    if (file) {
-      screenshot = await uploadScreenshot(file);
-      document.getElementById("editScreenshotUrl").value = screenshot;
-    }
+    const screenshot = document.getElementById("editScreenshotUrl").value.trim();
 
     const data = {
       title: document.getElementById("editTitle").value.trim(),

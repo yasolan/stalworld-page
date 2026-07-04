@@ -108,27 +108,11 @@ Firebase → Authentication → Settings → Authorized domains:
 
 
 
-## 6. Скриншоты (Cloudinary, бесплатно)
+## 6. Скриншоты
 
-ImgBB и похожие сервисы часто **не работают из браузера** (CORS). Cloudinary — нормальный вариант для GitHub Pages.
+Загрузка файлов не используется — только **прямая ссылка** на картинку в форме репорта и админке.
 
-1. Регистрация: https://cloudinary.com (бесплатный тариф, карта не нужна)
-2. На дашборде скопируй **Cloud name**
-3. **Settings → Upload → Add upload preset**
-   - **Signing Mode: Unsigned**
-   - Save → скопируй **Preset name**
-4. В `js/config.js`:
-
-```js
-cloudinary: {
-  cloudName: "твой_cloud_name",
-  uploadPreset: "твой_unsigned_preset"
-},
-```
-
-5. Push — загрузка файлов заработает
-
-Можно также вставить **прямую ссылку** на картинку вручную (Discord, VK, любой хостинг).
+Подойдёт Discord (ПКМ → «Копировать ссылку на изображение»), VK, Imgur и любой хостинг с прямым URL.
 
 ## 7. Импорт старых багов
 

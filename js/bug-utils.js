@@ -51,86 +51,17 @@ function screenshotBlock(url, alt) {
     </div>`;
 }
 
-function fileToBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-
-async function uploadScreenshot(file) {
-  if (!file) throw new Error("Файл не выбран");
-
-  if (!AuthService.currentUser()) {
-    throw new Error("Войдите в аккаунт, чтобы загрузить скриншот");
-  }
-
-  const { cloudName, uploadPreset } = CONFIG.cloudinary || {};
-  if (!cloudName || !uploadPreset) {
-    throw new Error("Загрузка не настроена: укажите cloudinary.cloudName и uploadPreset в config.js, или вставьте ссылку вручную");
-  }
-
-  const maxBytes = (CONFIG.maxUploadMb || 10) * 1024 * 1024;
-  if (file.size > maxBytes) {
-    throw new Error(`Файл слишком большой (макс. ${CONFIG.maxUploadMb || 10} МБ)`);
-  }
-
-  if (!file.type.startsWith("image/")) {
-    throw new Error("Можно загружать только изображения");
-  }
-
-  const body = new FormData();
-  body.append("file", file);
-  body.append("upload_preset", uploadPreset);
-
-  let res;
-  try {
-    res = await fetch(`https://api.cloudinary.com/v1_1/${encodeURIComponent(cloudName)}/image/upload`, {
-      method: "POST",
-      body
-    });
-  } catch (err) {
-    throw new Error("Не удалось связаться с Cloudinary. Проверьте интернет или вставьте ссылку вручную.");
-  }
-
-  let data;
-  try {
-    data = await res.json();
-  } catch (err) {
-    throw new Error("Cloudinary вернул некорректный ответ");
-  }
-
-  if (!res.ok || data.error) {
-    throw new Error(data.error?.message || `Ошибка загрузки (${res.status})`);
-  }
-
-  return data.secure_url || data.url;
-}
-
-function bindScreenshotPreview(fileInputId, previewId, urlInputId) {
-  const fileInput = document.getElementById(fileInputId);
+function bindScreenshotPreview(urlInputId, previewId) {
+  const urlInput = document.getElementById(urlInputId);
   const preview = document.getElementById(previewId);
-  const urlInput = urlInputId ? document.getElementById(urlInputId) : null;
-  if (!fileInput || !preview) return;
+  if (!urlInput || !preview) return;
 
   const update = () => {
-    const url = urlInput?.value.trim();
-    if (url) {
-      preview.innerHTML = screenshotBlock(url, "Превью");
-      return;
-    }
-    const file = fileInput.files?.[0];
-    if (!file) {
-      preview.innerHTML = "";
-      return;
-    }
-    preview.innerHTML = `<div class="screenshot-wrap"><img src="${URL.createObjectURL(file)}" class="screenshot-img" alt="Превью"></div>`;
+    const url = urlInput.value.trim();
+    preview.innerHTML = url ? screenshotBlock(url, "Превью") : "";
   };
 
-  fileInput.addEventListener("change", update);
-  urlInput?.addEventListener("input", update);
+  urlInput.addEventListener("input", update);
 }
 
 function avatarInitials(name) {

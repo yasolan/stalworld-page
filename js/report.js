@@ -13,8 +13,6 @@ async function submitReport(e) {
 
     const profile = await AuthService.getProfile(user.uid);
     let screenshot = document.getElementById("screenshotUrl").value.trim();
-    const file = document.getElementById("screenshotFile").files?.[0];
-    if (file) screenshot = await uploadScreenshot(file);
 
     const data = {
       title: document.getElementById("title").value.trim(),
@@ -62,7 +60,7 @@ function initReport() {
   document.getElementById("footerText").textContent = CONFIG.siteName;
   fillCategorySelect("category");
   fillPrioritySelect("priority", "medium");
-  bindScreenshotPreview("screenshotFile", "screenshotPreview", "screenshotUrl");
+  bindScreenshotPreview("screenshotUrl", "screenshotPreview");
   document.getElementById("reportForm").addEventListener("submit", submitReport);
 
   if (!FirebaseApp.isConfigured()) {
