@@ -6,12 +6,12 @@ const CONFIG = {
 
   // Firebase: https://console.firebase.google.com → Project settings → Web app
   firebase: {
-    apiKey: "AIzaSyAzCRvcQzuh3zfHwBP4EAqqslN10EvYLqU",
+    apiKey: "AIzaSyAzCRvcQzuh3zfHWBP4EAqqsln10EvYLqU",
     authDomain: "stalworld-page.firebaseapp.com",
     projectId: "stalworld-page",
     storageBucket: "stalworld-page.firebasestorage.app",
     messagingSenderId: "787077367735",
-    appId: "1:787077367735:web:d9b117e4f1b4ce6b8b0a32",
+    appId: "1:787077367735:web:d95117e4f154ce6b8b0a32",
     measurementId: "G-CK98819SFG"
   },
 
