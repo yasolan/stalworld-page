@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Баг-трекер STALWORLD — сообщайте об ошибках разработчикам">
+  <meta name="description" content="Баг-трекер STALWORLD">
   <title>Bug Tracker — STALWORLD</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
@@ -23,7 +23,7 @@
   <main class="container">
     <section class="hero">
       <h1>Баг-трекер</h1>
-      <p>Список известных проблем и статус их исправления. Нашли баг? Сообщите команде разработки.</p>
+      <p>Список известных проблем и статус их исправления.</p>
       <div class="stats">
         <div class="stat"><div class="num" id="statTotal">0</div><div class="label">Всего</div></div>
         <div class="stat"><div class="num" id="statOpen">0</div><div class="label">Открытых</div></div>
@@ -33,12 +33,8 @@
 
     <div class="filters">
       <input type="search" id="searchInput" placeholder="Поиск по названию или ID...">
-      <select id="statusFilter">
-        <option value="">Все статусы</option>
-      </select>
-      <select id="categoryFilter">
-        <option value="">Все категории</option>
-      </select>
+      <select id="statusFilter"><option value="">Все статусы</option></select>
+      <select id="categoryFilter"><option value="">Все категории</option></select>
     </div>
 
     <div id="bugList" class="bug-list"></div>
@@ -46,27 +42,38 @@
   </main>
 
   <div id="modal" class="modal-overlay">
-    <div class="modal">
-      <button id="modalClose" class="modal-close">&times;</button>
-      <div class="bug-id" id="modalId"></div>
-      <h2 id="modalTitle"></h2>
-      <div id="modalStatus" style="margin-bottom:12px"></div>
-
-      <div class="modal-section">
-        <h3>Описание</h3>
-        <p id="modalDescription"></p>
+    <div class="modal modal--wide">
+      <button id="modalClose" class="modal-close" aria-label="Закрыть">&times;</button>
+      <div class="modal-head">
+        <div class="bug-id" id="modalId"></div>
+        <h2 id="modalTitle"></h2>
+        <div id="modalStatus"></div>
       </div>
-      <div class="modal-section">
-        <h3>Шаги воспроизведения</h3>
-        <pre id="modalSteps"></pre>
-      </div>
-      <div class="modal-section">
-        <h3>Информация</h3>
-        <p id="modalMeta"></p>
-      </div>
-      <div class="modal-section">
-        <h3>Комментарии команды</h3>
-        <div id="modalComments"></div>
+      <div class="modal-body">
+        <div class="modal-main">
+          <div class="modal-section">
+            <h3>Описание</h3>
+            <p id="modalDescription"></p>
+          </div>
+          <div class="modal-section">
+            <h3>Шаги воспроизведения</h3>
+            <pre id="modalSteps"></pre>
+          </div>
+          <div class="modal-section">
+            <h3>Информация</h3>
+            <div id="modalMeta"></div>
+          </div>
+          <div class="modal-section">
+            <h3>Комментарии команды</h3>
+            <div id="modalComments"></div>
+          </div>
+        </div>
+        <div class="modal-side">
+          <div class="modal-section">
+            <h3>Скриншот</h3>
+            <div id="modalScreenshot"></div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -79,6 +86,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
   <script src="js/config.js"></script>
+  <script src="js/bug-utils.js"></script>
   <script src="js/firebase-app.js"></script>
   <script src="js/auth-service.js"></script>
   <script src="js/logger.js"></script>

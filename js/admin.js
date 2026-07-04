@@ -1,5 +1,6 @@
 let bugs = [];
 let logsUnsubscribe = null;
+let selectedIndex = -1;
 
 function showAdmin() {
   document.getElementById("loginScreen").classList.add("hidden");
@@ -49,10 +50,13 @@ async function logout() {
 
 async function loadAdminData() {
   bugs = (await loadBugs()).slice();
+  selectedIndex = -1;
   renderAdminList();
   fillAdminFormSelects();
+  clearForm();
   exportJson();
   startLogsStream();
+  bindScreenshotPreview("editScreenshotFile", "editScreenshotPreview", "editScreenshotUrl");
 }
 
 function startLogsStream() {
@@ -64,15 +68,33 @@ function startLogsStream() {
 
 function renderAdminList() {
   const list = document.getElementById("adminBugList");
-  list.innerHTML = bugs.map((b, i) => `
-    <div class="admin-item">
-      <span>${b.id} — ${escapeHtml(b.title.slice(0, 40))}</span>
-      <span>
-        <button type="button" onclick="editBug(${i})">Edit</button>
-        <button type="button" onclick="deleteBug(${i})">Del</button>
-      </span>
-    </div>
+  const filter = (document.getElementById("adminSearch")?.value || "").toLowerCase();
+  const filtered = bugs.map((b, i) => ({ b, i })).filter(({ b }) => {
+    if (!filter) return true;
+    return `${b.id} ${b.title} ${b.description}`.toLowerCase().includes(filter);
+  });
+
+  if (!filtered.length) {
+    list.innerHTML = '<p class="muted" style="padding:12px">Багов нет</p>';
+    return;
+  }
+
+  list.innerHTML = filtered.map(({ b, i }) => `
+    <button type="button" class="admin-bug-item ${i === selectedIndex ? "active" : ""}" onclick="selectBug(${i})">
+      <div class="admin-bug-item-top">
+        <span class="bug-id">${b.id}</span>
+        ${badge(b.status)}
+      </div>
+      <div class="admin-bug-item-title">${escapeHtml(b.title)}</div>
+      <div class="admin-bug-item-meta">${CATEGORY_MAP[b.category] || b.category} · ${b.updatedAt || b.createdAt}</div>
+    </button>
   `).join("");
+}
+
+function selectBug(index) {
+  selectedIndex = index;
+  editBug(index);
+  renderAdminList();
 }
 
 function fillAdminFormSelects() {
@@ -91,85 +113,107 @@ function fillAdminFormSelects() {
 }
 
 function clearForm() {
+  selectedIndex = -1;
   document.getElementById("editIndex").value = "";
-  document.getElementById("editId").value = "BUG-" + String(bugs.length + 1).padStart(3, "0");
+  const newId = nextBugId(bugs);
+  document.getElementById("editId").value = newId;
+  document.getElementById("editIdDisplay").textContent = newId;
   document.getElementById("editTitle").value = "";
   document.getElementById("editDescription").value = "";
   document.getElementById("editSteps").value = "";
+  document.getElementById("editScreenshotUrl").value = "";
+  document.getElementById("editScreenshotFile").value = "";
+  document.getElementById("editScreenshotPreview").innerHTML = "";
   document.getElementById("editCategory").value = "other";
   document.getElementById("editPriority").value = "medium";
   document.getElementById("editStatus").value = "open";
-  document.getElementById("editVersion").value = "";
-  document.getElementById("editPlatform").value = "";
   document.getElementById("editReporter").value = "";
-  document.getElementById("editVotes").value = "0";
+  renderAdminList();
 }
 
 function editBug(index) {
   const b = bugs[index];
   document.getElementById("editIndex").value = index;
   document.getElementById("editId").value = b.id;
+  document.getElementById("editIdDisplay").textContent = b.id;
   document.getElementById("editTitle").value = b.title;
   document.getElementById("editDescription").value = b.description || "";
   document.getElementById("editSteps").value = b.steps || "";
+  document.getElementById("editScreenshotUrl").value = b.screenshot || "";
+  document.getElementById("editScreenshotFile").value = "";
   document.getElementById("editCategory").value = b.category || "other";
   document.getElementById("editPriority").value = b.priority || "medium";
   document.getElementById("editStatus").value = b.status || "open";
-  document.getElementById("editVersion").value = b.version || "";
-  document.getElementById("editPlatform").value = b.platform || "";
   document.getElementById("editReporter").value = b.reporter || "";
-  document.getElementById("editVotes").value = b.votes || 0;
+  const preview = document.getElementById("editScreenshotPreview");
+  preview.innerHTML = b.screenshot ? screenshotBlock(b.screenshot, b.title) : "";
 }
 
 async function deleteBug(index) {
   if (!confirm("Удалить баг " + bugs[index].id + "?")) return;
   const id = bugs[index].id;
   bugs.splice(index, 1);
+  clearForm();
   renderAdminList();
   exportJson();
-  clearForm();
   await Logger.write("admin.bug_delete", "Удалён баг", { bugId: id });
 }
 
 async function saveBug(e) {
   e.preventDefault();
   const index = document.getElementById("editIndex").value;
-  const today = new Date().toISOString().slice(0, 10);
   const isNew = index === "";
+  const today = new Date().toISOString().slice(0, 10);
+  const submitBtn = e.target.querySelector('button[type="submit"]');
+  submitBtn.disabled = true;
 
-  const bug = {
-    id: document.getElementById("editId").value.trim(),
-    title: document.getElementById("editTitle").value.trim(),
-    description: document.getElementById("editDescription").value.trim(),
-    steps: document.getElementById("editSteps").value.trim(),
-    category: document.getElementById("editCategory").value,
-    priority: document.getElementById("editPriority").value,
-    status: document.getElementById("editStatus").value,
-    version: document.getElementById("editVersion").value.trim(),
-    platform: document.getElementById("editPlatform").value.trim(),
-    reporter: document.getElementById("editReporter").value.trim(),
-    votes: parseInt(document.getElementById("editVotes").value, 10) || 0,
-    comments: !isNew ? (bugs[index].comments || []) : [],
-    createdAt: !isNew ? bugs[index].createdAt : today,
-    updatedAt: today
-  };
+  try {
+    let screenshot = document.getElementById("editScreenshotUrl").value.trim();
+    const file = document.getElementById("editScreenshotFile").files?.[0];
+    if (file) {
+      screenshot = await uploadScreenshot(file);
+      document.getElementById("editScreenshotUrl").value = screenshot;
+    }
 
-  if (!bug.id || !bug.title) {
-    alert("ID и заголовок обязательны");
-    return;
+    const bug = {
+      id: document.getElementById("editId").value.trim(),
+      title: document.getElementById("editTitle").value.trim(),
+      description: document.getElementById("editDescription").value.trim(),
+      steps: document.getElementById("editSteps").value.trim(),
+      screenshot,
+      category: document.getElementById("editCategory").value,
+      priority: document.getElementById("editPriority").value,
+      status: document.getElementById("editStatus").value,
+      reporter: document.getElementById("editReporter").value.trim(),
+      comments: !isNew ? (bugs[index].comments || []) : [],
+      createdAt: !isNew ? bugs[index].createdAt : today,
+      updatedAt: today
+    };
+
+    if (!bug.title) {
+      alert("Заголовок обязателен");
+      return;
+    }
+
+    if (isNew) {
+      bug.id = nextBugId(bugs);
+      bugs.push(bug);
+      selectedIndex = bugs.length - 1;
+    } else {
+      bugs[index] = bug;
+      selectedIndex = parseInt(index, 10);
+    }
+
+    document.getElementById("editId").value = bug.id;
+    document.getElementById("editIdDisplay").textContent = bug.id;
+    renderAdminList();
+    exportJson();
+    await Logger.write(isNew ? "admin.bug_create" : "admin.bug_update", isNew ? "Создан баг" : "Обновлён баг", { bugId: bug.id, title: bug.title });
+  } catch (ex) {
+    alert(ex.message || "Ошибка сохранения");
+  } finally {
+    submitBtn.disabled = false;
   }
-
-  if (!isNew) {
-    bugs[index] = bug;
-  } else {
-    bugs.push(bug);
-  }
-
-  renderAdminList();
-  exportJson();
-  clearForm();
-  await Logger.write(isNew ? "admin.bug_create" : "admin.bug_update", isNew ? "Создан баг" : "Обновлён баг", { bugId: bug.id, title: bug.title });
-  alert("Сохранено. Скопируй JSON в data/bugs.json и запушь на GitHub.");
 }
 
 function exportJson() {
@@ -205,6 +249,11 @@ async function initAdmin() {
   document.getElementById("btnDownload").addEventListener("click", downloadJson);
   document.getElementById("btnLogout").addEventListener("click", logout);
   document.getElementById("btnNew").addEventListener("click", clearForm);
+  document.getElementById("btnDelete").addEventListener("click", () => {
+    if (selectedIndex >= 0) deleteBug(selectedIndex);
+    else alert("Выберите баг из списка");
+  });
+  document.getElementById("adminSearch")?.addEventListener("input", renderAdminList);
 
   document.querySelectorAll(".admin-tab").forEach(btn => {
     btn.addEventListener("click", () => switchTab(btn.dataset.tab));

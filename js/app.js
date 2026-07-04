@@ -1,11 +1,10 @@
 const STATUS_LABELS = CONFIG.labels;
-
 const CATEGORY_MAP = Object.fromEntries(CONFIG.categories.map(c => [c.id, c.name]));
 const PRIORITY_MAP = Object.fromEntries(CONFIG.priorities.map(p => [p.id, p.name]));
 
 async function loadBugs() {
-  const res = await fetch('data/bugs.json');
-  if (!res.ok) throw new Error('Не удалось загрузить data/bugs.json');
+  const res = await fetch("data/bugs.json");
+  if (!res.ok) throw new Error("Не удалось загрузить data/bugs.json");
   const data = await res.json();
   return data.bugs || [];
 }
@@ -21,49 +20,47 @@ function priorityBadge(priority) {
 }
 
 function renderStats(bugs) {
-  const open = bugs.filter(b => b.status === 'open' || b.status === 'in_progress').length;
-  const fixed = bugs.filter(b => b.status === 'fixed').length;
-  document.getElementById('statTotal').textContent = bugs.length;
-  document.getElementById('statOpen').textContent = open;
-  document.getElementById('statFixed').textContent = fixed;
+  const open = bugs.filter(b => b.status === "open" || b.status === "in_progress").length;
+  const fixed = bugs.filter(b => b.status === "fixed").length;
+  document.getElementById("statTotal").textContent = bugs.length;
+  document.getElementById("statOpen").textContent = open;
+  document.getElementById("statFixed").textContent = fixed;
 }
 
 function renderBugList(bugs) {
-  const list = document.getElementById('bugList');
-  const empty = document.getElementById('emptyState');
+  const list = document.getElementById("bugList");
+  const empty = document.getElementById("emptyState");
 
   if (!bugs.length) {
-    list.innerHTML = '';
-    empty.classList.remove('hidden');
+    list.innerHTML = "";
+    empty.classList.remove("hidden");
     return;
   }
 
-  empty.classList.add('hidden');
+  empty.classList.add("hidden");
   list.innerHTML = bugs.map(bug => `
-    <article class="bug-card" data-id="${bug.id}">
-      <div class="bug-card-header">
-        <div>
+    <article class="bug-card bug-card--${bug.status}" data-id="${bug.id}">
+      <div class="bug-card-top">
+        <div class="bug-card-main">
           <div class="bug-id">${bug.id}</div>
           <div class="bug-title">${escapeHtml(bug.title)}</div>
+          <p class="bug-excerpt">${escapeHtml(truncate(bug.description, 140))}</p>
         </div>
-        <div class="bug-meta">
-          ${badge(bug.status)}
-          ${priorityBadge(bug.priority)}
-        </div>
+        ${bug.screenshot ? `<div class="bug-card-thumb"><img src="${escapeHtml(bug.screenshot)}" alt=""></div>` : ""}
       </div>
-      <p style="color:var(--text-muted);font-size:0.9rem;margin-top:6px">${escapeHtml(truncate(bug.description, 120))}</p>
-      <div class="bug-footer">
-        <span>${CATEGORY_MAP[bug.category] || bug.category}</span>
-        <span>${bug.version || '—'}</span>
-        <span>${bug.platform || '—'}</span>
-        <span>${bug.votes || 0} голосов</span>
-        <span>${bug.updatedAt || bug.createdAt}</span>
+      <div class="bug-card-bottom">
+        <div class="bug-meta">${badge(bug.status)} ${priorityBadge(bug.priority)}</div>
+        <div class="bug-footer">
+          <span>${CATEGORY_MAP[bug.category] || bug.category}</span>
+          <span>${bug.reporter || "—"}</span>
+          <span>${bug.updatedAt || bug.createdAt}</span>
+        </div>
       </div>
     </article>
-  `).join('');
+  `).join("");
 
-  list.querySelectorAll('.bug-card').forEach(card => {
-    card.addEventListener('click', () => {
+  list.querySelectorAll(".bug-card").forEach(card => {
+    card.addEventListener("click", () => {
       const bug = bugs.find(b => b.id === card.dataset.id);
       if (bug) openModal(bug);
     });
@@ -71,44 +68,55 @@ function renderBugList(bugs) {
 }
 
 function openModal(bug) {
-  const overlay = document.getElementById('modal');
-  document.getElementById('modalTitle').textContent = bug.title;
-  document.getElementById('modalId').textContent = bug.id;
-  document.getElementById('modalStatus').innerHTML = badge(bug.status) + ' ' + priorityBadge(bug.priority);
-  document.getElementById('modalDescription').textContent = bug.description || '—';
-  document.getElementById('modalSteps').textContent = bug.steps || '—';
-  document.getElementById('modalMeta').innerHTML = `
-    <strong>Категория:</strong> ${CATEGORY_MAP[bug.category] || bug.category}<br>
-    <strong>Версия:</strong> ${bug.version || '—'}<br>
-    <strong>Платформа:</strong> ${bug.platform || '—'}<br>
-    <strong>Автор:</strong> ${bug.reporter || '—'}<br>
-    <strong>Создан:</strong> ${bug.createdAt || '—'} · <strong>Обновлён:</strong> ${bug.updatedAt || '—'}<br>
-    <strong>Голоса:</strong> ${bug.votes || 0}
+  const overlay = document.getElementById("modal");
+  document.getElementById("modalTitle").textContent = bug.title;
+  document.getElementById("modalId").textContent = bug.id;
+  document.getElementById("modalStatus").innerHTML = badge(bug.status) + " " + priorityBadge(bug.priority);
+  document.getElementById("modalDescription").textContent = bug.description || "—";
+  document.getElementById("modalSteps").textContent = bug.steps || "—";
+  document.getElementById("modalMeta").innerHTML = `
+    <div class="meta-grid">
+      <div><span>Категория</span><strong>${CATEGORY_MAP[bug.category] || bug.category}</strong></div>
+      <div><span>Автор</span><strong>${escapeHtml(bug.reporter || "—")}</strong></div>
+      <div><span>Создан</span><strong>${bug.createdAt || "—"}</strong></div>
+      <div><span>Обновлён</span><strong>${bug.updatedAt || "—"}</strong></div>
+    </div>
   `;
 
-  const commentsEl = document.getElementById('modalComments');
+  const shotEl = document.getElementById("modalScreenshot");
+  if (bug.screenshot) {
+    shotEl.innerHTML = screenshotBlock(bug.screenshot, bug.title);
+    shotEl.parentElement.classList.remove("hidden");
+  } else {
+    shotEl.innerHTML = "";
+    shotEl.parentElement.classList.add("hidden");
+  }
+
+  const commentsEl = document.getElementById("modalComments");
   if (bug.comments && bug.comments.length) {
     commentsEl.innerHTML = bug.comments.map(c => `
       <div class="comment">
-        <div class="comment-author">${escapeHtml(c.author)} <span class="comment-date">${c.date || ''}</span></div>
+        <div class="comment-author">${escapeHtml(c.author)} <span class="comment-date">${c.date || ""}</span></div>
         <div>${escapeHtml(c.text)}</div>
       </div>
-    `).join('');
+    `).join("");
   } else {
-    commentsEl.innerHTML = '<p style="color:var(--text-muted)">Комментариев пока нет.</p>';
+    commentsEl.innerHTML = '<p class="muted">Комментариев пока нет.</p>';
   }
 
-  overlay.classList.add('open');
+  overlay.classList.add("open");
+  document.body.style.overflow = "hidden";
 }
 
 function closeModal() {
-  document.getElementById('modal').classList.remove('open');
+  document.getElementById("modal").classList.remove("open");
+  document.body.style.overflow = "";
 }
 
 function filterBugs(bugs) {
-  const search = document.getElementById('searchInput').value.toLowerCase();
-  const status = document.getElementById('statusFilter').value;
-  const category = document.getElementById('categoryFilter').value;
+  const search = document.getElementById("searchInput").value.toLowerCase();
+  const status = document.getElementById("statusFilter").value;
+  const category = document.getElementById("categoryFilter").value;
 
   return bugs.filter(b => {
     if (status && b.status !== status) return false;
@@ -122,19 +130,19 @@ function filterBugs(bugs) {
 }
 
 function escapeHtml(str) {
-  const d = document.createElement('div');
+  const d = document.createElement("div");
   d.textContent = str;
   return d.innerHTML;
 }
 
 function truncate(str, len) {
-  if (!str || str.length <= len) return str || '';
-  return str.slice(0, len) + '…';
+  if (!str || str.length <= len) return str || "";
+  return str.slice(0, len) + "…";
 }
 
 function fillSelects() {
-  const statusFilter = document.getElementById('statusFilter');
-  const categoryFilter = document.getElementById('categoryFilter');
+  const statusFilter = document.getElementById("statusFilter");
+  const categoryFilter = document.getElementById("categoryFilter");
 
   Object.entries(STATUS_LABELS).forEach(([id, name]) => {
     statusFilter.innerHTML += `<option value="${id}">${name}</option>`;
@@ -148,11 +156,11 @@ function fillSelects() {
 let allBugs = [];
 
 async function init() {
-  if (!document.getElementById('bugList')) return;
+  if (!document.getElementById("bugList")) return;
 
-  const siteNameEl = document.getElementById('siteName');
+  const siteNameEl = document.getElementById("siteName");
   if (siteNameEl) siteNameEl.textContent = CONFIG.siteName;
-  document.getElementById('footerText').textContent = CONFIG.siteName;
+  document.getElementById("footerText").textContent = CONFIG.siteName;
 
   fillSelects();
 
@@ -162,19 +170,22 @@ async function init() {
     renderStats(allBugs);
     renderBugList(allBugs);
   } catch (e) {
-    document.getElementById('bugList').innerHTML = `<div class="notice">Ошибка загрузки: ${e.message}</div>`;
+    document.getElementById("bugList").innerHTML = `<div class="notice">Ошибка загрузки: ${e.message}</div>`;
   }
 
-  ['searchInput', 'statusFilter', 'categoryFilter'].forEach(id => {
-    document.getElementById(id).addEventListener('input', () => {
+  ["searchInput", "statusFilter", "categoryFilter"].forEach(id => {
+    document.getElementById(id).addEventListener("input", () => {
       renderBugList(filterBugs(allBugs));
     });
   });
 
-  document.getElementById('modalClose').addEventListener('click', closeModal);
-  document.getElementById('modal').addEventListener('click', e => {
-    if (e.target.id === 'modal') closeModal();
+  document.getElementById("modalClose").addEventListener("click", closeModal);
+  document.getElementById("modal").addEventListener("click", e => {
+    if (e.target.id === "modal") closeModal();
+  });
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape") closeModal();
   });
 }
 
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener("DOMContentLoaded", init);

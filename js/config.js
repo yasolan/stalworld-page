@@ -4,7 +4,8 @@ const CONFIG = {
   githubRepo: "yasolan/stalworld-page",
   githubIssuesUrl: "https://github.com/yasolan/stalworld-page/issues/new",
 
-  // Firebase: https://console.firebase.google.com → Project settings → Web app
+  // Imgur Client-ID для загрузки скриншотов: https://api.imgur.com/oauth2/addclient
+  imgurClientId: "",
   firebase: {
     apiKey: "AIzaSyAzCRvcQzuh3zfHWBP4EAqqsln10EvYLqU",
     authDomain: "stalworld-page.firebaseapp.com",
