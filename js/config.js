@@ -3,8 +3,11 @@ const CONFIG = {
   siteUrl: "https://yasolan.github.io/stalworld-page/",
   githubRepo: "yasolan/stalworld-page",
 
-  // Макс. размер загружаемого скриншота (МБ)
-  maxUploadMb: 5,
+  // Макс. размер загружаемого скриншота (МБ). ImgBB принимает до 32 МБ.
+  maxUploadMb: 10,
+
+  // Бесплатный ключ: https://api.imgbb.com/ → Get API key
+  imgbbApiKey: "",
   firebase: {
     apiKey: "AIzaSyAzCRvcQzuh3zfHWBP4EAqqsln10EvYLqU",
     authDomain: "stalworld-page.firebaseapp.com",

@@ -63,29 +63,39 @@ function fileToBase64(file) {
 async function uploadScreenshot(file) {
   if (!file) throw new Error("Файл не выбран");
 
-  const user = AuthService.currentUser();
-  if (!user) throw new Error("Войдите в аккаунт, чтобы загрузить скриншот");
-
-  if (!FirebaseApp.storage) {
-    throw new Error("Firebase Storage не подключён — см. FIREBASE_SETUP.md");
+  if (!AuthService.currentUser()) {
+    throw new Error("Войдите в аккаунт, чтобы загрузить скриншот");
   }
 
-  const maxBytes = (CONFIG.maxUploadMb || 5) * 1024 * 1024;
+  if (!CONFIG.imgbbApiKey) {
+    throw new Error("Загрузка не настроена: добавьте imgbbApiKey в config.js или вставьте ссылку вручную");
+  }
+
+  const maxBytes = (CONFIG.maxUploadMb || 10) * 1024 * 1024;
   if (file.size > maxBytes) {
-    throw new Error(`Файл слишком большой (макс. ${CONFIG.maxUploadMb || 5} МБ)`);
+    throw new Error(`Файл слишком большой (макс. ${CONFIG.maxUploadMb || 10} МБ)`);
   }
 
   if (!file.type.startsWith("image/")) {
     throw new Error("Можно загружать только изображения");
   }
 
-  const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
-  const safeExt = ["jpg", "jpeg", "png", "gif", "webp"].includes(ext) ? ext : "jpg";
-  const fileName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${safeExt}`;
-  const ref = FirebaseApp.storage.ref(`screenshots/${user.uid}/${fileName}`);
+  const base64 = await fileToBase64(file);
+  const body = new FormData();
+  body.append("image", base64.split(",")[1]);
+  body.append("name", file.name || "screenshot");
 
-  const snap = await ref.put(file, { contentType: file.type });
-  return snap.ref.getDownloadURL();
+  const res = await fetch(`https://api.imgbb.com/1/upload?key=${encodeURIComponent(CONFIG.imgbbApiKey)}`, {
+    method: "POST",
+    body
+  });
+  const data = await res.json();
+
+  if (!data.success) {
+    throw new Error(data.error?.message || data.status_txt || "Не удалось загрузить скриншот");
+  }
+
+  return data.data.url || data.data.display_url;
 }
 
 function bindScreenshotPreview(fileInputId, previewId, urlInputId) {

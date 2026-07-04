@@ -1,7 +1,6 @@
 const FirebaseApp = {
   auth: null,
   db: null,
-  storage: null,
   ready: false,
 
   init() {
@@ -19,9 +18,6 @@ const FirebaseApp = {
     }
     this.auth = firebase.auth();
     this.db = firebase.firestore();
-    if (typeof firebase.storage === "function") {
-      this.storage = firebase.storage();
-    }
     this.ready = true;
     return true;
   },
