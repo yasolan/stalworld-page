@@ -54,6 +54,10 @@ function showReportForm(show) {
     : "Войдите в аккаунт, чтобы отправить репорт.";
 }
 
+function syncReportAuth(user) {
+  showReportForm(!!user);
+}
+
 function initReport() {
   document.getElementById("footerText").textContent = CONFIG.siteName;
   fillCategorySelect("category");
@@ -67,7 +71,13 @@ function initReport() {
   }
 
   FirebaseApp.init();
-  AuthService.onAuthChange(user => showReportForm(!!user));
+  document.getElementById("reportIntro").textContent = "Проверка входа...";
+  AuthService.onAuthChange(syncReportAuth);
+
+  // На случай, если auth уже восстановлен до подписки
+  if (AuthService.currentUser()) {
+    syncReportAuth(AuthService.currentUser());
+  }
 }
 
 document.addEventListener("DOMContentLoaded", initReport);
