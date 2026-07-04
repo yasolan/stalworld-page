@@ -15,19 +15,24 @@
         <a href="report.html">Сообщить</a>
         <a href="admin.html" class="active">Админка</a>
       </nav>
+      <nav id="authNav" class="auth-nav"></nav>
     </div>
   </header>
 
   <div id="loginScreen" class="container">
     <div class="login-box">
       <h1>Админка</h1>
-      <p>Редактирование списка багов. Доступ только для администраторов.</p>
+      <p>Вход для администраторов. UID аккаунта должен быть в коллекции <code>admins</code> (см. FIREBASE_SETUP.md).</p>
       <form id="loginForm">
         <div class="form-group">
-          <label for="adminPassword">Пароль</label>
-          <input type="password" id="adminPassword" required>
+          <label for="adminEmail">Email</label>
+          <input type="email" id="adminEmail" required autocomplete="email">
         </div>
-        <p id="loginError" style="color:var(--red);font-size:0.85rem;margin-bottom:10px"></p>
+        <div class="form-group">
+          <label for="adminPassword">Пароль</label>
+          <input type="password" id="adminPassword" required autocomplete="current-password">
+        </div>
+        <p id="loginError" class="form-error"></p>
         <button type="submit" class="btn btn-primary">Войти</button>
       </form>
     </div>
@@ -35,8 +40,11 @@
 
   <div id="adminScreen" class="container hidden">
     <section class="hero" style="padding-bottom:0">
-      <h1>Управление багами</h1>
-      <p>Редактируйте баги, скачайте JSON и замените файл <code>data/bugs.json</code> в репозитории.</p>
+      <h1>Админ-панель</h1>
+      <div class="admin-tabs">
+        <button type="button" class="admin-tab active" data-tab="bugs">Баги</button>
+        <button type="button" class="admin-tab" data-tab="logs">Логи</button>
+      </div>
       <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
         <button id="btnNew" class="btn btn-secondary">+ Новый баг</button>
         <button id="btnCopy" class="btn btn-secondary">Копировать JSON</button>
@@ -45,71 +53,81 @@
       </div>
     </section>
 
-    <div class="admin-grid">
-      <div class="admin-panel">
-        <h2>Список багов</h2>
-        <div id="adminBugList" class="admin-list"></div>
+    <div id="tabBugs">
+      <div class="admin-grid">
+        <div class="admin-panel">
+          <h2>Список багов</h2>
+          <div id="adminBugList" class="admin-list"></div>
+        </div>
+        <div class="admin-panel">
+          <h2>Редактор</h2>
+          <form id="bugEditForm">
+            <input type="hidden" id="editIndex">
+            <div class="form-group">
+              <label for="editId">ID</label>
+              <input type="text" id="editId" required>
+            </div>
+            <div class="form-group">
+              <label for="editTitle">Заголовок</label>
+              <input type="text" id="editTitle" required>
+            </div>
+            <div class="form-group">
+              <label for="editDescription">Описание</label>
+              <textarea id="editDescription"></textarea>
+            </div>
+            <div class="form-group">
+              <label for="editSteps">Шаги</label>
+              <textarea id="editSteps"></textarea>
+            </div>
+            <div class="form-group">
+              <label for="editCategory">Категория</label>
+              <select id="editCategory"></select>
+            </div>
+            <div class="form-group">
+              <label for="editPriority">Приоритет</label>
+              <select id="editPriority"></select>
+            </div>
+            <div class="form-group">
+              <label for="editStatus">Статус</label>
+              <select id="editStatus"></select>
+            </div>
+            <div class="form-group">
+              <label for="editVersion">Версия</label>
+              <input type="text" id="editVersion">
+            </div>
+            <div class="form-group">
+              <label for="editPlatform">Платформа</label>
+              <input type="text" id="editPlatform">
+            </div>
+            <div class="form-group">
+              <label for="editReporter">Автор</label>
+              <input type="text" id="editReporter">
+            </div>
+            <div class="form-group">
+              <label for="editVotes">Голоса</label>
+              <input type="number" id="editVotes" value="0" min="0">
+            </div>
+            <button type="submit" class="btn btn-primary">Сохранить</button>
+          </form>
+        </div>
       </div>
-
-      <div class="admin-panel">
-        <h2>Редактор</h2>
-        <form id="bugEditForm">
-          <input type="hidden" id="editIndex">
-          <div class="form-group">
-            <label for="editId">ID</label>
-            <input type="text" id="editId" required>
-          </div>
-          <div class="form-group">
-            <label for="editTitle">Заголовок</label>
-            <input type="text" id="editTitle" required>
-          </div>
-          <div class="form-group">
-            <label for="editDescription">Описание</label>
-            <textarea id="editDescription"></textarea>
-          </div>
-          <div class="form-group">
-            <label for="editSteps">Шаги</label>
-            <textarea id="editSteps"></textarea>
-          </div>
-          <div class="form-group">
-            <label for="editCategory">Категория</label>
-            <select id="editCategory"></select>
-          </div>
-          <div class="form-group">
-            <label for="editPriority">Приоритет</label>
-            <select id="editPriority"></select>
-          </div>
-          <div class="form-group">
-            <label for="editStatus">Статус</label>
-            <select id="editStatus"></select>
-          </div>
-          <div class="form-group">
-            <label for="editVersion">Версия</label>
-            <input type="text" id="editVersion">
-          </div>
-          <div class="form-group">
-            <label for="editPlatform">Платформа</label>
-            <input type="text" id="editPlatform">
-          </div>
-          <div class="form-group">
-            <label for="editReporter">Автор</label>
-            <input type="text" id="editReporter">
-          </div>
-          <div class="form-group">
-            <label for="editVotes">Голоса</label>
-            <input type="number" id="editVotes" value="0" min="0">
-          </div>
-          <button type="submit" class="btn btn-primary">Сохранить</button>
-        </form>
+      <div class="admin-panel" style="margin-bottom:30px">
+        <h2>JSON для GitHub</h2>
+        <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:10px">
+          Скопируйте в <code>data/bugs.json</code> и сделайте push.
+        </p>
+        <textarea id="jsonOutput" readonly></textarea>
       </div>
     </div>
 
-    <div class="admin-panel" style="margin-bottom:60px">
-      <h2>JSON для GitHub</h2>
-      <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:10px">
-        Скопируйте содержимое в <code>data/bugs.json</code> и сделайте commit + push.
-      </p>
-      <textarea id="jsonOutput" readonly></textarea>
+    <div id="tabLogs" class="hidden" style="margin-bottom:60px">
+      <div class="admin-panel">
+        <h2>Журнал событий</h2>
+        <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:14px">
+          Логи хранятся в Firebase и не могут быть удалены через сайт.
+        </p>
+        <div id="logsTable"></div>
+      </div>
     </div>
   </div>
 
@@ -117,7 +135,14 @@
     <div class="container"><span id="footerText"></span></div>
   </footer>
 
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
   <script src="js/config.js"></script>
+  <script src="js/firebase-app.js"></script>
+  <script src="js/auth-service.js"></script>
+  <script src="js/logger.js"></script>
+  <script src="js/nav-auth.js"></script>
   <script src="js/app.js"></script>
   <script src="js/admin.js"></script>
 </body>

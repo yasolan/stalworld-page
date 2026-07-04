@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Вход — STALWORLD</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <a href="index.html" class="logo"><span>STAL</span>WORLD</a>
+      <nav id="authNav" class="auth-nav"></nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="login-box">
+      <h1>Вход</h1>
+      <p>Войдите, чтобы отправлять баг-репорты от своего аккаунта.</p>
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" required autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="password">Пароль</label>
+          <input type="password" id="password" required autocomplete="current-password">
+        </div>
+        <p id="loginError" class="form-error"></p>
+        <button type="submit" class="btn btn-primary">Войти</button>
+        <p style="margin-top:14px;font-size:0.9rem;color:var(--text-muted)">
+          Нет аккаунта? <a href="register.html">Регистрация</a>
+        </p>
+      </form>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container"><span id="footerText"></span></div>
+  </footer>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/firebase-app.js"></script>
+  <script src="js/auth-service.js"></script>
+  <script src="js/logger.js"></script>
+  <script src="js/nav-auth.js"></script>
+  <script src="js/login.js"></script>
+</body>
+</html>

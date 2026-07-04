@@ -466,3 +466,100 @@ nav a:hover, nav a.active {
   color: var(--text-muted);
   font-size: 0.85rem;
 }
+
+.auth-nav {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.auth-nav a {
+  padding: 6px 12px;
+  border-radius: 6px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  text-decoration: none;
+}
+
+.auth-nav a:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+  text-decoration: none;
+}
+
+.auth-user {
+  color: var(--accent);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.auth-muted {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.form-error {
+  color: var(--red);
+  font-size: 0.85rem;
+  margin-bottom: 10px;
+  min-height: 1.2em;
+}
+
+.admin-tabs {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.admin-tab {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.admin-tab.active {
+  background: var(--accent);
+  color: #1a1508;
+  border-color: var(--accent);
+}
+
+.logs-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.logs-table th,
+.logs-table td {
+  border: 1px solid var(--border);
+  padding: 8px 10px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.logs-table th {
+  background: var(--bg);
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.logs-table tr:hover td {
+  background: var(--bg-hover);
+}
+
+.log-time {
+  white-space: nowrap;
+  color: var(--text-muted);
+}
+
+.logs-table code {
+  background: var(--bg);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+}
