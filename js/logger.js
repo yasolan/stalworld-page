@@ -35,6 +35,39 @@ const Logger = {
       }, err => console.error("Logs subscribe error:", err));
   },
 
+  async deleteForUser({ userId, email }) {
+    if (!FirebaseApp.ready) throw new Error("Firebase не настроен");
+    const uid = (userId || "").trim();
+    const mail = (email || "").trim();
+    if (!uid && !mail) throw new Error("Укажите UID или email");
+
+    const ids = new Set();
+
+    if (uid) {
+      const snap = await FirebaseApp.db.collection("logs").where("userId", "==", uid).get();
+      snap.docs.forEach(d => ids.add(d.id));
+    }
+
+    if (mail) {
+      const snap = await FirebaseApp.db.collection("logs").where("email", "==", mail).get();
+      snap.docs.forEach(d => ids.add(d.id));
+    }
+
+    const idList = [...ids];
+    if (!idList.length) return 0;
+
+    const batchSize = 500;
+    for (let i = 0; i < idList.length; i += batchSize) {
+      const batch = FirebaseApp.db.batch();
+      idList.slice(i, i + batchSize).forEach(id => {
+        batch.delete(FirebaseApp.db.collection("logs").doc(id));
+      });
+      await batch.commit();
+    }
+
+    return idList.length;
+  },
+
   renderTable(logs, containerId) {
     const el = document.getElementById(containerId);
     if (!el) return;

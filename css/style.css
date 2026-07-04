@@ -783,6 +783,28 @@ nav a:hover, nav a.active {
   font-size: 0.8rem;
 }
 
+.logs-cleanup-panel {
+  margin-bottom: 20px;
+}
+
+.logs-cleanup-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 12px;
+  align-items: end;
+  margin-top: 12px;
+}
+
+.logs-cleanup-result {
+  margin-top: 12px;
+}
+
+@media (max-width: 768px) {
+  .logs-cleanup-form {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Priority — заметные бейджи и баннеры */
 .priority-badge {
   display: inline-flex;

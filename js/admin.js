@@ -221,6 +221,41 @@ function switchTab(tab) {
   document.getElementById("tabLogs").classList.toggle("hidden", tab !== "logs");
 }
 
+async function cleanupUserLogs() {
+  const uid = document.getElementById("logCleanupUid").value.trim();
+  const email = document.getElementById("logCleanupEmail").value.trim();
+  const resultEl = document.getElementById("logCleanupResult");
+
+  if (!uid && !email) {
+    alert("Укажите UID или email пользователя");
+    return;
+  }
+
+  const label = [uid, email].filter(Boolean).join(" / ");
+  if (!confirm(`Удалить все логи пользователя ${label}?\n\nДругие записи журнала не затронуты.`)) return;
+
+  const btn = document.getElementById("btnLogCleanup");
+  btn.disabled = true;
+  resultEl.classList.add("hidden");
+
+  try {
+    const count = await Logger.deleteForUser({ userId: uid, email });
+    resultEl.textContent = count
+      ? `Удалено записей: ${count}`
+      : "Записей для этого пользователя не найдено";
+    resultEl.classList.remove("hidden");
+    await Logger.write("admin.logs_cleanup", "Очистка логов пользователя", {
+      targetUserId: uid || null,
+      targetEmail: email || null,
+      deleted: count
+    });
+  } catch (ex) {
+    alert(ex.message || "Не удалось удалить логи");
+  } finally {
+    btn.disabled = false;
+  }
+}
+
 async function initAdmin() {
   document.getElementById("footerText").textContent = CONFIG.siteName;
 
@@ -235,6 +270,7 @@ async function initAdmin() {
   document.querySelectorAll(".admin-tab").forEach(btn => {
     btn.addEventListener("click", () => switchTab(btn.dataset.tab));
   });
+  document.getElementById("btnLogCleanup")?.addEventListener("click", cleanupUserLogs);
 
   if (!FirebaseApp.isConfigured()) {
     showLogin("Firebase не настроен — см. FIREBASE_SETUP.md");
