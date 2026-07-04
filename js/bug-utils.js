@@ -62,21 +62,30 @@ function fileToBase64(file) {
 
 async function uploadScreenshot(file) {
   if (!file) throw new Error("Файл не выбран");
-  if (!CONFIG.imgurClientId) {
-    throw new Error("Загрузка недоступна: добавьте imgurClientId в config.js или вставьте ссылку вручную");
+
+  const user = AuthService.currentUser();
+  if (!user) throw new Error("Войдите в аккаунт, чтобы загрузить скриншот");
+
+  if (!FirebaseApp.storage) {
+    throw new Error("Firebase Storage не подключён — см. FIREBASE_SETUP.md");
   }
-  const base64 = await fileToBase64(file);
-  const res = await fetch("https://api.imgur.com/3/image", {
-    method: "POST",
-    headers: {
-      Authorization: "Client-ID " + CONFIG.imgurClientId,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ image: base64.split(",")[1], type: "base64" })
-  });
-  const data = await res.json();
-  if (!data.success) throw new Error(data.data?.error || "Не удалось загрузить скриншот");
-  return data.data.link;
+
+  const maxBytes = (CONFIG.maxUploadMb || 5) * 1024 * 1024;
+  if (file.size > maxBytes) {
+    throw new Error(`Файл слишком большой (макс. ${CONFIG.maxUploadMb || 5} МБ)`);
+  }
+
+  if (!file.type.startsWith("image/")) {
+    throw new Error("Можно загружать только изображения");
+  }
+
+  const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+  const safeExt = ["jpg", "jpeg", "png", "gif", "webp"].includes(ext) ? ext : "jpg";
+  const fileName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${safeExt}`;
+  const ref = FirebaseApp.storage.ref(`screenshots/${user.uid}/${fileName}`);
+
+  const snap = await ref.put(file, { contentType: file.type });
+  return snap.ref.getDownloadURL();
 }
 
 function bindScreenshotPreview(fileInputId, previewId, urlInputId) {

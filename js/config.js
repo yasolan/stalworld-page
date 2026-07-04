@@ -3,8 +3,8 @@ const CONFIG = {
   siteUrl: "https://yasolan.github.io/stalworld-page/",
   githubRepo: "yasolan/stalworld-page",
 
-  // Imgur Client-ID для загрузки скриншотов: https://api.imgur.com/oauth2/addclient
-  imgurClientId: "",
+  // Макс. размер загружаемого скриншота (МБ)
+  maxUploadMb: 5,
   firebase: {
     apiKey: "AIzaSyAzCRvcQzuh3zfHWBP4EAqqsln10EvYLqU",
     authDomain: "stalworld-page.firebaseapp.com",
