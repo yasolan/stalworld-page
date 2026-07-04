@@ -1452,3 +1452,25 @@ a.bug-card:hover { text-decoration: none; }
   background: #2a2a2a;
   border-color: var(--text-muted);
 }
+
+.coords-display {
+  margin: 0;
+}
+
+.coords-value {
+  display: inline-block;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+  font-size: 1rem;
+  color: var(--accent);
+  letter-spacing: 0.04em;
+}
+
+#threadStatCoords {
+  color: var(--accent);
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 0.8rem;
+}

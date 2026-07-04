@@ -61,6 +61,7 @@ const BugsService = {
       description: data.description,
       steps: data.steps || "",
       screenshot: data.screenshot || "",
+      coordinates: data.coordinates || "",
       category: data.category,
       priority: data.priority,
       status: "open",

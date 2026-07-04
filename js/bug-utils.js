@@ -51,6 +51,17 @@ function screenshotBlock(url, alt) {
     </div>`;
 }
 
+function formatCoordinates(coords) {
+  if (!coords?.trim()) return "";
+  return coords.trim();
+}
+
+function coordinatesBlock(coords) {
+  const text = formatCoordinates(coords);
+  if (!text) return "";
+  return `<code class="coords-value">${escapeHtml(text)}</code>`;
+}
+
 function bindScreenshotPreview(urlInputId, previewId) {
   const urlInput = document.getElementById(urlInputId);
   const preview = document.getElementById(previewId);

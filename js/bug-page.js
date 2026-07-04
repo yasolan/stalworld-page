@@ -13,6 +13,15 @@ function getBugIdFromUrl() {
 function updateThreadStats(bug, replyCount) {
   document.getElementById("threadStatReplies").textContent = pluralReplies(replyCount);
   document.getElementById("threadStatCategory").textContent = CATEGORY_MAP()[bug.category] || bug.category;
+  const coordsEl = document.getElementById("threadStatCoords");
+  if (coordsEl) {
+    if (bug.coordinates?.trim()) {
+      coordsEl.textContent = "📍 " + formatCoordinates(bug.coordinates);
+      coordsEl.classList.remove("hidden");
+    } else {
+      coordsEl.classList.add("hidden");
+    }
+  }
   document.getElementById("threadStatStatus").innerHTML = statusBadge(bug.status);
   document.getElementById("threadStatUpdated").textContent = "Обновлено: " + formatDate(bug.updatedAt || bug.createdAt);
   document.getElementById("commentCount").textContent = replyCount ? pluralReplies(replyCount) : "нет ответов";
@@ -49,6 +58,14 @@ function renderBug(bug) {
   const stepsSection = document.getElementById("bugStepsSection");
   if (!bug.steps?.trim()) stepsSection.classList.add("hidden");
   else stepsSection.classList.remove("hidden");
+
+  const coordsSection = document.getElementById("bugCoordsSection");
+  if (bug.coordinates?.trim()) {
+    document.getElementById("bugCoordinates").innerHTML = coordinatesBlock(bug.coordinates);
+    coordsSection.classList.remove("hidden");
+  } else {
+    coordsSection.classList.add("hidden");
+  }
 
   const shotSection = document.getElementById("bugScreenshotSection");
   if (bug.screenshot) {

@@ -123,6 +123,7 @@ function clearForm() {
   document.getElementById("editScreenshotUrl").value = "";
   document.getElementById("editScreenshotPreview").innerHTML = "";
   document.getElementById("editCategory").value = "other";
+  document.getElementById("editCoordinates").value = "";
   document.getElementById("editPriority").value = "medium";
   document.getElementById("editStatus").value = "open";
   document.getElementById("editReporter").value = "";
@@ -139,6 +140,7 @@ function populateForm(b) {
   document.getElementById("editSteps").value = b.steps || "";
   document.getElementById("editScreenshotUrl").value = b.screenshot || "";
   document.getElementById("editCategory").value = b.category || "other";
+  document.getElementById("editCoordinates").value = b.coordinates || "";
   document.getElementById("editPriority").value = b.priority || "medium";
   document.getElementById("editStatus").value = b.status || "open";
   document.getElementById("editReporter").value = b.reporter || "";
@@ -171,6 +173,7 @@ async function saveBug(e) {
       description: document.getElementById("editDescription").value.trim(),
       steps: document.getElementById("editSteps").value.trim(),
       screenshot,
+      coordinates: document.getElementById("editCoordinates").value.trim(),
       category: document.getElementById("editCategory").value,
       priority: document.getElementById("editPriority").value,
       status: document.getElementById("editStatus").value,

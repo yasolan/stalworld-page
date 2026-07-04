@@ -69,7 +69,7 @@ function filterBugs(bugs) {
     if (category && b.category !== category) return false;
     if (priority && b.priority !== priority) return false;
     if (search) {
-      const hay = `${b.id} ${b.title} ${b.description} ${b.reporter || ""}`.toLowerCase();
+      const hay = `${b.id} ${b.title} ${b.description} ${b.reporter || ""} ${b.coordinates || ""}`.toLowerCase();
       if (!hay.includes(search)) return false;
     }
     return true;

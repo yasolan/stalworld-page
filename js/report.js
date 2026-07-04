@@ -20,6 +20,7 @@ async function submitReport(e) {
       steps: document.getElementById("steps").value.trim(),
       screenshot,
       category: document.getElementById("category").value,
+      coordinates: document.getElementById("coordinates").value.trim(),
       priority: document.getElementById("priority").value
     };
 

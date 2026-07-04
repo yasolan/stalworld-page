@@ -35,6 +35,7 @@
         <div class="thread-toolbar">
           <div class="thread-stat" id="threadStatReplies">0 ответов</div>
           <div class="thread-stat" id="threadStatCategory"></div>
+          <div class="thread-stat hidden" id="threadStatCoords"></div>
           <div class="thread-stat" id="threadStatStatus"></div>
           <div class="thread-stat" id="threadStatUpdated"></div>
         </div>
@@ -71,6 +72,10 @@
             <section class="post-section" id="bugStepsSection">
               <h3>Шаги воспроизведения</h3>
               <pre id="bugSteps"></pre>
+            </section>
+            <section class="post-section hidden" id="bugCoordsSection">
+              <h3>Координаты</h3>
+              <p class="coords-display" id="bugCoordinates"></p>
             </section>
             <section class="post-section hidden" id="bugScreenshotSection">
               <h3>Скриншот</h3>
