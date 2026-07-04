@@ -38,5 +38,13 @@ const CONFIG = {
     { id: "medium", name: "Средний" },
     { id: "high", name: "Высокий" },
     { id: "critical", name: "Критический" }
-  ]
+  ],
+
+  // Префикс в заголовке GitHub Issue (видно в списке issues)
+  issuePriorityPrefix: {
+    low: "[LOW]",
+    medium: "[MEDIUM]",
+    high: "[HIGH]",
+    critical: "[CRITICAL]"
+  }
 };

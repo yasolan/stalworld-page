@@ -1,3 +1,8 @@
+function buildIssueTitle(data) {
+  const prefix = CONFIG.issuePriorityPrefix?.[data.priority] || "[MEDIUM]";
+  return `${prefix} [BUG] ${data.title}`;
+}
+
 function buildReportBody(data) {
   const lines = [
     "## Описание",
@@ -54,7 +59,7 @@ async function submitReport(e) {
     }
 
     const issueUrl = CONFIG.githubIssuesUrl
-      + "?title=" + encodeURIComponent("[BUG] " + data.title)
+      + "?title=" + encodeURIComponent(buildIssueTitle(data))
       + "&body=" + encodeURIComponent(buildReportBody(data))
       + "&labels=bug";
 
