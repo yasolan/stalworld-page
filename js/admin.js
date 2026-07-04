@@ -1,4 +1,4 @@
-const ADMIN_PASSWORD = 'stalworld-admin';
+const ADMIN_PASSWORD = '4dm1n_p4$$w0r61337228CHkyou';
 const STORAGE_KEY = 'bugtracker_admin_session';
 
 let bugs = [];
