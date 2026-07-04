@@ -41,14 +41,14 @@
   <div id="adminScreen" class="container hidden">
     <section class="hero" style="padding-bottom:0">
       <h1>Админ-панель</h1>
+      <p class="muted">Баги хранятся в Firestore — изменения сразу на сайте.</p>
       <div class="admin-tabs">
         <button type="button" class="admin-tab active" data-tab="bugs">Баги</button>
         <button type="button" class="admin-tab" data-tab="logs">Логи</button>
       </div>
       <div class="admin-toolbar">
         <button id="btnNew" class="btn btn-secondary">+ Новый баг</button>
-        <button id="btnCopy" class="btn btn-secondary">Копировать JSON</button>
-        <button id="btnDownload" class="btn btn-secondary">Скачать JSON</button>
+        <button id="btnSeed" class="btn btn-secondary">Импорт из bugs.json</button>
         <button id="btnLogout" class="btn btn-danger">Выйти</button>
       </div>
     </section>
@@ -66,13 +66,11 @@
         <div class="admin-panel admin-panel--editor">
           <h2>Редактор</h2>
           <form id="bugEditForm">
-            <input type="hidden" id="editIndex">
-            <input type="hidden" id="editId">
-
             <div class="id-display">
               <span>ID</span>
               <strong id="editIdDisplay">—</strong>
-              <small>присваивается автоматически</small>
+              <a id="editOpenLink" href="#" target="_blank" class="hidden">Открыть на сайте →</a>
+              <small>при создании ID присваивается автоматически</small>
             </div>
 
             <div class="form-group">
@@ -104,7 +102,7 @@
               </div>
               <div class="form-group">
                 <label for="editPriority">Приоритет</label>
-                <select id="editPriority"></select>
+                <select id="editPriority" class="priority-select"></select>
               </div>
               <div class="form-group">
                 <label for="editStatus">Статус</label>
@@ -121,12 +119,6 @@
             </div>
           </form>
         </div>
-      </div>
-
-      <div class="admin-panel" style="margin-bottom:30px">
-        <h2>JSON для GitHub</h2>
-        <p class="muted" style="margin-bottom:10px">Скопируйте в <code>data/bugs.json</code> и сделайте push.</p>
-        <textarea id="jsonOutput" readonly></textarea>
       </div>
     </div>
 
@@ -151,8 +143,8 @@
   <script src="js/firebase-app.js"></script>
   <script src="js/auth-service.js"></script>
   <script src="js/logger.js"></script>
+  <script src="js/bugs-service.js"></script>
   <script src="js/nav-auth.js"></script>
-  <script src="js/app.js"></script>
   <script src="js/admin.js"></script>
 </body>
 </html>

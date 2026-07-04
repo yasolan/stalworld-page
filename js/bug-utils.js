@@ -1,10 +1,44 @@
-function nextBugId(bugs) {
-  let max = 0;
-  (bugs || []).forEach(b => {
-    const m = /^BUG-(\d+)$/i.exec(b.id);
-    if (m) max = Math.max(max, parseInt(m[1], 10));
-  });
-  return "BUG-" + String(max + 1).padStart(3, "0");
+const CATEGORY_MAP = () => Object.fromEntries(CONFIG.categories.map(c => [c.id, c.name]));
+const PRIORITY_MAP = () => Object.fromEntries(CONFIG.priorities.map(p => [p.id, p.name]));
+
+function escapeHtml(str) {
+  const d = document.createElement("div");
+  d.textContent = str == null ? "" : String(str);
+  return d.innerHTML;
+}
+
+function truncate(str, len) {
+  if (!str || str.length <= len) return str || "";
+  return str.slice(0, len) + "…";
+}
+
+function formatDate(ts) {
+  if (!ts) return "—";
+  const date = ts.toDate ? ts.toDate() : new Date(ts);
+  return date.toLocaleString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
+}
+
+function formatDateShort(ts) {
+  if (!ts) return "—";
+  const date = ts.toDate ? ts.toDate() : new Date(ts);
+  return date.toLocaleDateString("ru-RU");
+}
+
+function statusBadge(status) {
+  const label = CONFIG.labels[status] || status;
+  return `<span class="badge badge-${status}">${label}</span>`;
+}
+
+function priorityBadge(priority, large) {
+  const label = PRIORITY_MAP()[priority] || priority;
+  const cls = large ? `priority-badge priority-badge--${priority} priority-badge--lg` : `priority-badge priority-badge--${priority}`;
+  return `<span class="${cls}">${escapeHtml(label)}</span>`;
+}
+
+function priorityBanner(priority) {
+  const labels = { critical: "КРИТИЧЕСКИЙ ПРИОРИТЕТ", high: "ВЫСОКИЙ ПРИОРИТЕТ", medium: "СРЕДНИЙ ПРИОРИТЕТ", low: "НИЗКИЙ ПРИОРИТЕТ" };
+  if (priority === "medium" || priority === "low") return "";
+  return `<div class="priority-banner priority-banner--${priority}">${labels[priority] || priority}</div>`;
 }
 
 function screenshotBlock(url, alt) {
@@ -41,9 +75,7 @@ async function uploadScreenshot(file) {
     body: JSON.stringify({ image: base64.split(",")[1], type: "base64" })
   });
   const data = await res.json();
-  if (!data.success) {
-    throw new Error(data.data?.error || "Не удалось загрузить скриншот");
-  }
+  if (!data.success) throw new Error(data.data?.error || "Не удалось загрузить скриншот");
   return data.data.link;
 }
 
@@ -64,10 +96,49 @@ function bindScreenshotPreview(fileInputId, previewId, urlInputId) {
       preview.innerHTML = "";
       return;
     }
-    const objUrl = URL.createObjectURL(file);
-    preview.innerHTML = `<div class="screenshot-wrap"><img src="${objUrl}" class="screenshot-img" alt="Превью"></div>`;
+    preview.innerHTML = `<div class="screenshot-wrap"><img src="${URL.createObjectURL(file)}" class="screenshot-img" alt="Превью"></div>`;
   };
 
   fileInput.addEventListener("change", update);
   urlInput?.addEventListener("input", update);
+}
+
+function renderComments(comments, containerId) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  if (!comments.length) {
+    el.innerHTML = '<p class="muted">Пока нет сообщений. Начните обсуждение.</p>';
+    return;
+  }
+  el.innerHTML = comments.map(c => `
+    <article class="forum-post ${c.isDev ? "forum-post--dev" : ""}">
+      <div class="forum-post-head">
+        <strong>${escapeHtml(c.author)}</strong>
+        ${c.isDev ? '<span class="dev-badge">Команда</span>' : ""}
+        <time>${formatDate(c.createdAt)}</time>
+      </div>
+      <div class="forum-post-body">${escapeHtml(c.text).replace(/\n/g, "<br>")}</div>
+    </article>
+  `).join("");
+}
+
+function fillPrioritySelect(selectId, defaultValue) {
+  const el = document.getElementById(selectId);
+  if (!el) return;
+  el.innerHTML = CONFIG.priorities.map(p =>
+    `<option value="${p.id}">${p.name}${p.id === "critical" ? " ⚠" : ""}</option>`
+  ).join("");
+  if (defaultValue) el.value = defaultValue;
+}
+
+function fillCategorySelect(selectId) {
+  const el = document.getElementById(selectId);
+  if (!el) return;
+  el.innerHTML = CONFIG.categories.map(c => `<option value="${c.id}">${c.name}</option>`).join("");
+}
+
+function fillStatusSelect(selectId) {
+  const el = document.getElementById(selectId);
+  if (!el) return;
+  el.innerHTML = Object.entries(CONFIG.labels).map(([id, name]) => `<option value="${id}">${name}</option>`).join("");
 }

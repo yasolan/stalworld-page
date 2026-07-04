@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Баг — STALWORLD</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <a href="index.html" class="logo"><span>STAL</span>WORLD</a>
+      <nav>
+        <a href="index.html">Баги</a>
+        <a href="report.html">Сообщить</a>
+      </nav>
+      <nav id="authNav" class="auth-nav"></nav>
+    </div>
+  </header>
+
+  <main class="container bug-page">
+    <a href="index.html" class="back-link">← К списку багов</a>
+    <div id="bugLoading" class="muted">Загрузка...</div>
+    <div id="bugNotFound" class="empty hidden">Баг не найден</div>
+
+    <article id="bugContent" class="hidden">
+      <div id="bugBanner"></div>
+      <header class="bug-page-header">
+        <div class="bug-page-head-top">
+          <span class="bug-id" id="bugId"></span>
+          <div id="bugBadges"></div>
+        </div>
+        <h1 id="bugTitle"></h1>
+        <div class="bug-page-meta" id="bugMeta"></div>
+      </header>
+
+      <div class="bug-page-grid">
+        <section class="bug-page-main">
+          <section class="detail-block">
+            <h2>Описание</h2>
+            <p id="bugDescription"></p>
+          </section>
+          <section class="detail-block">
+            <h2>Шаги воспроизведения</h2>
+            <pre id="bugSteps"></pre>
+          </section>
+          <section class="detail-block" id="bugScreenshotSection">
+            <h2>Скриншот</h2>
+            <div id="bugScreenshot"></div>
+          </section>
+        </section>
+
+        <section class="forum-panel">
+          <h2>Обсуждение <span id="commentCount" class="forum-count"></span></h2>
+          <div id="commentsList" class="forum-thread"></div>
+          <div id="commentLogin" class="notice hidden">
+            <a href="login.html">Войдите</a>, чтобы писать в обсуждении.
+          </div>
+          <form id="commentForm" class="forum-form hidden">
+            <div class="form-group">
+              <label for="commentText">Новое сообщение</label>
+              <textarea id="commentText" required placeholder="Уточнение, воспроизведение, доп. информация..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Отправить</button>
+          </form>
+        </section>
+      </div>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container"><span id="footerText"></span></div>
+  </footer>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/bug-utils.js"></script>
+  <script src="js/firebase-app.js"></script>
+  <script src="js/auth-service.js"></script>
+  <script src="js/logger.js"></script>
+  <script src="js/bugs-service.js"></script>
+  <script src="js/nav-auth.js"></script>
+  <script src="js/bug-page.js"></script>
+</body>
+</html>

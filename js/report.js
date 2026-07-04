@@ -1,56 +1,28 @@
-function buildIssueTitle(data) {
-  const prefix = CONFIG.issuePriorityPrefix?.[data.priority] || "[MEDIUM]";
-  return `${prefix} [BUG] ${data.title}`;
-}
-
-function buildReportBody(data) {
-  const lines = [
-    "## Описание",
-    data.description,
-    "",
-    "## Шаги воспроизведения",
-    data.steps || "—",
-    "",
-    "## Детали",
-    `- **Категория:** ${data.categoryLabel}`,
-    `- **Приоритет:** ${data.priorityLabel}`,
-    `- **Аккаунт:** ${data.reporter}`
-  ];
-  if (data.screenshot) {
-    lines.push("", "## Скриншот", data.screenshot);
-  }
-  lines.push("", "---", "_Отправлено через Bug Tracker_");
-  return lines.join("\n");
-}
-
 async function submitReport(e) {
   e.preventDefault();
   const btn = document.getElementById("submitBtn");
   btn.disabled = true;
-  btn.textContent = "Загрузка...";
+  btn.textContent = "Отправка...";
 
   try {
-    const categoryEl = document.getElementById("category");
-    const priorityEl = document.getElementById("priority");
     const user = AuthService.currentUser();
-    const profile = user ? await AuthService.getProfile(user.uid) : null;
+    if (!user) {
+      alert("Нужно войти в аккаунт");
+      return;
+    }
 
+    const profile = await AuthService.getProfile(user.uid);
     let screenshot = document.getElementById("screenshotUrl").value.trim();
     const file = document.getElementById("screenshotFile").files?.[0];
-    if (file) {
-      screenshot = await uploadScreenshot(file);
-    }
+    if (file) screenshot = await uploadScreenshot(file);
 
     const data = {
       title: document.getElementById("title").value.trim(),
       description: document.getElementById("description").value.trim(),
       steps: document.getElementById("steps").value.trim(),
       screenshot,
-      category: categoryEl.value,
-      categoryLabel: categoryEl.options[categoryEl.selectedIndex].text,
-      priority: priorityEl.value,
-      priorityLabel: priorityEl.options[priorityEl.selectedIndex].text,
-      reporter: profile?.nickname ? `${profile.nickname} (${user.email})` : user.email
+      category: document.getElementById("category").value,
+      priority: document.getElementById("priority").value
     };
 
     if (!data.title || !data.description) {
@@ -58,56 +30,39 @@ async function submitReport(e) {
       return;
     }
 
-    const issueUrl = CONFIG.githubIssuesUrl
-      + "?title=" + encodeURIComponent(buildIssueTitle(data))
-      + "&body=" + encodeURIComponent(buildReportBody(data))
-      + "&labels=bug";
+    const bugId = await BugsService.createBug(data, user, profile);
 
-    window.open(issueUrl, "_blank");
-
-    await Logger.write("bug.report", "Отправлен баг-репорт", {
+    await Logger.write("bug.create", "Создан баг на сайте", {
+      bugId,
       title: data.title,
-      category: data.category,
-      hasScreenshot: !!data.screenshot
+      priority: data.priority
     });
 
-    document.getElementById("successNotice").classList.remove("hidden");
-    document.getElementById("reportForm").reset();
-    document.getElementById("screenshotPreview").innerHTML = "";
+    window.location.href = "bug.html?id=" + encodeURIComponent(bugId);
   } catch (ex) {
     alert(ex.message || "Ошибка отправки");
-  } finally {
     btn.disabled = false;
-    btn.textContent = "Отправить на GitHub";
+    btn.textContent = "Опубликовать баг";
   }
-}
-
-function fillFormSelects() {
-  CONFIG.categories.forEach(c => {
-    document.getElementById("category").innerHTML += `<option value="${c.id}">${c.name}</option>`;
-  });
-  CONFIG.priorities.forEach(p => {
-    document.getElementById("priority").innerHTML += `<option value="${p.id}">${p.name}</option>`;
-  });
 }
 
 function showReportForm(show) {
   document.getElementById("authRequired").classList.toggle("hidden", show);
   document.getElementById("reportBlock").classList.toggle("hidden", !show);
   document.getElementById("reportIntro").textContent = show
-    ? "Заполните форму — откроется GitHub Issue."
+    ? "Баг появится на сайте — можно обсуждать в комментариях."
     : "Войдите в аккаунт, чтобы отправить репорт.";
 }
 
 function initReport() {
   document.getElementById("footerText").textContent = CONFIG.siteName;
-  document.getElementById("repoName").textContent = CONFIG.githubRepo;
-  fillFormSelects();
+  fillCategorySelect("category");
+  fillPrioritySelect("priority", "medium");
   bindScreenshotPreview("screenshotFile", "screenshotPreview", "screenshotUrl");
   document.getElementById("reportForm").addEventListener("submit", submitReport);
 
   if (!FirebaseApp.isConfigured()) {
-    showReportForm(true);
+    document.getElementById("reportIntro").textContent = "Firebase не настроен";
     return;
   }
 

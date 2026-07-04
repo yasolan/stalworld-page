@@ -1,6 +1,7 @@
 let bugs = [];
+let bugsUnsub = null;
 let logsUnsubscribe = null;
-let selectedIndex = -1;
+let selectedBugId = null;
 
 function showAdmin() {
   document.getElementById("loginScreen").classList.add("hidden");
@@ -43,20 +44,27 @@ async function adminLogin(e) {
 }
 
 async function logout() {
+  if (bugsUnsub) bugsUnsub();
   if (logsUnsubscribe) logsUnsubscribe();
   await AuthService.logout();
   showLogin();
 }
 
-async function loadAdminData() {
-  bugs = (await loadBugs()).slice();
-  selectedIndex = -1;
-  renderAdminList();
+function loadAdminData() {
   fillAdminFormSelects();
   clearForm();
-  exportJson();
-  startLogsStream();
   bindScreenshotPreview("editScreenshotFile", "editScreenshotPreview", "editScreenshotUrl");
+  startLogsStream();
+
+  if (bugsUnsub) bugsUnsub();
+  bugsUnsub = BugsService.subscribeBugs(list => {
+    bugs = list;
+    renderAdminList();
+    if (selectedBugId) {
+      const bug = bugs.find(b => b.id === selectedBugId);
+      if (bug) populateForm(bug);
+    }
+  });
 }
 
 function startLogsStream() {
@@ -69,7 +77,8 @@ function startLogsStream() {
 function renderAdminList() {
   const list = document.getElementById("adminBugList");
   const filter = (document.getElementById("adminSearch")?.value || "").toLowerCase();
-  const filtered = bugs.map((b, i) => ({ b, i })).filter(({ b }) => {
+  const cats = CATEGORY_MAP();
+  const filtered = bugs.filter(b => {
     if (!filter) return true;
     return `${b.id} ${b.title} ${b.description}`.toLowerCase().includes(filter);
   });
@@ -79,45 +88,35 @@ function renderAdminList() {
     return;
   }
 
-  list.innerHTML = filtered.map(({ b, i }) => `
-    <button type="button" class="admin-bug-item ${i === selectedIndex ? "active" : ""}" onclick="selectBug(${i})">
+  list.innerHTML = filtered.map(b => `
+    <button type="button" class="admin-bug-item admin-bug-item--${b.priority} ${b.id === selectedBugId ? "active" : ""}" onclick="selectBug('${b.id}')">
       <div class="admin-bug-item-top">
         <span class="bug-id">${b.id}</span>
-        ${badge(b.status)}
+        ${priorityBadge(b.priority)} ${statusBadge(b.status)}
       </div>
       <div class="admin-bug-item-title">${escapeHtml(b.title)}</div>
-      <div class="admin-bug-item-meta">${CATEGORY_MAP[b.category] || b.category} · ${b.updatedAt || b.createdAt}</div>
+      <div class="admin-bug-item-meta">${cats[b.category] || b.category} · ${formatDateShort(b.updatedAt || b.createdAt)}</div>
     </button>
   `).join("");
 }
 
-function selectBug(index) {
-  selectedIndex = index;
-  editBug(index);
+function selectBug(bugId) {
+  selectedBugId = bugId;
+  const bug = bugs.find(b => b.id === bugId);
+  if (bug) populateForm(bug);
   renderAdminList();
 }
 
 function fillAdminFormSelects() {
-  ["editCategory", "editPriority", "editStatus"].forEach(id => {
-    document.getElementById(id).innerHTML = "";
-  });
-  CONFIG.categories.forEach(c => {
-    document.getElementById("editCategory").innerHTML += `<option value="${c.id}">${c.name}</option>`;
-  });
-  CONFIG.priorities.forEach(p => {
-    document.getElementById("editPriority").innerHTML += `<option value="${p.id}">${p.name}</option>`;
-  });
-  Object.entries(CONFIG.labels).forEach(([id, name]) => {
-    document.getElementById("editStatus").innerHTML += `<option value="${id}">${name}</option>`;
-  });
+  fillCategorySelect("editCategory");
+  fillPrioritySelect("editPriority", "medium");
+  fillStatusSelect("editStatus");
 }
 
 function clearForm() {
-  selectedIndex = -1;
-  document.getElementById("editIndex").value = "";
-  const newId = nextBugId(bugs);
-  document.getElementById("editId").value = newId;
-  document.getElementById("editIdDisplay").textContent = newId;
+  selectedBugId = null;
+  document.getElementById("editIdDisplay").textContent = "новый";
+  document.getElementById("editOpenLink").classList.add("hidden");
   document.getElementById("editTitle").value = "";
   document.getElementById("editDescription").value = "";
   document.getElementById("editSteps").value = "";
@@ -131,11 +130,11 @@ function clearForm() {
   renderAdminList();
 }
 
-function editBug(index) {
-  const b = bugs[index];
-  document.getElementById("editIndex").value = index;
-  document.getElementById("editId").value = b.id;
+function populateForm(b) {
   document.getElementById("editIdDisplay").textContent = b.id;
+  const link = document.getElementById("editOpenLink");
+  link.href = "bug.html?id=" + encodeURIComponent(b.id);
+  link.classList.remove("hidden");
   document.getElementById("editTitle").value = b.title;
   document.getElementById("editDescription").value = b.description || "";
   document.getElementById("editSteps").value = b.steps || "";
@@ -145,25 +144,24 @@ function editBug(index) {
   document.getElementById("editPriority").value = b.priority || "medium";
   document.getElementById("editStatus").value = b.status || "open";
   document.getElementById("editReporter").value = b.reporter || "";
-  const preview = document.getElementById("editScreenshotPreview");
-  preview.innerHTML = b.screenshot ? screenshotBlock(b.screenshot, b.title) : "";
+  document.getElementById("editScreenshotPreview").innerHTML = b.screenshot ? screenshotBlock(b.screenshot, b.title) : "";
 }
 
-async function deleteBug(index) {
-  if (!confirm("Удалить баг " + bugs[index].id + "?")) return;
-  const id = bugs[index].id;
-  bugs.splice(index, 1);
-  clearForm();
-  renderAdminList();
-  exportJson();
+async function deleteSelectedBug() {
+  if (!selectedBugId) {
+    alert("Выберите баг из списка");
+    return;
+  }
+  if (!confirm("Удалить баг " + selectedBugId + "? Комментарии тоже удалятся.")) return;
+  const id = selectedBugId;
+  await BugsService.deleteBug(id);
   await Logger.write("admin.bug_delete", "Удалён баг", { bugId: id });
+  clearForm();
 }
 
 async function saveBug(e) {
   e.preventDefault();
-  const index = document.getElementById("editIndex").value;
-  const isNew = index === "";
-  const today = new Date().toISOString().slice(0, 10);
+  const isNew = !selectedBugId;
   const submitBtn = e.target.querySelector('button[type="submit"]');
   submitBtn.disabled = true;
 
@@ -175,8 +173,7 @@ async function saveBug(e) {
       document.getElementById("editScreenshotUrl").value = screenshot;
     }
 
-    const bug = {
-      id: document.getElementById("editId").value.trim(),
+    const data = {
       title: document.getElementById("editTitle").value.trim(),
       description: document.getElementById("editDescription").value.trim(),
       steps: document.getElementById("editSteps").value.trim(),
@@ -184,31 +181,24 @@ async function saveBug(e) {
       category: document.getElementById("editCategory").value,
       priority: document.getElementById("editPriority").value,
       status: document.getElementById("editStatus").value,
-      reporter: document.getElementById("editReporter").value.trim(),
-      comments: !isNew ? (bugs[index].comments || []) : [],
-      createdAt: !isNew ? bugs[index].createdAt : today,
-      updatedAt: today
+      reporter: document.getElementById("editReporter").value.trim()
     };
 
-    if (!bug.title) {
+    if (!data.title) {
       alert("Заголовок обязателен");
       return;
     }
 
-    if (isNew) {
-      bug.id = nextBugId(bugs);
-      bugs.push(bug);
-      selectedIndex = bugs.length - 1;
-    } else {
-      bugs[index] = bug;
-      selectedIndex = parseInt(index, 10);
-    }
+    const user = AuthService.currentUser();
+    const profile = await AuthService.getProfile(user.uid);
 
-    document.getElementById("editId").value = bug.id;
-    document.getElementById("editIdDisplay").textContent = bug.id;
-    renderAdminList();
-    exportJson();
-    await Logger.write(isNew ? "admin.bug_create" : "admin.bug_update", isNew ? "Создан баг" : "Обновлён баг", { bugId: bug.id, title: bug.title });
+    if (isNew) {
+      selectedBugId = await BugsService.createBug(data, user, profile);
+      await Logger.write("admin.bug_create", "Создан баг", { bugId: selectedBugId, title: data.title });
+    } else {
+      await BugsService.updateBug(selectedBugId, data);
+      await Logger.write("admin.bug_update", "Обновлён баг", { bugId: selectedBugId, title: data.title });
+    }
   } catch (ex) {
     alert(ex.message || "Ошибка сохранения");
   } finally {
@@ -216,22 +206,17 @@ async function saveBug(e) {
   }
 }
 
-function exportJson() {
-  document.getElementById("jsonOutput").value = JSON.stringify({ bugs }, null, 2);
-}
-
-function copyJson() {
-  document.getElementById("jsonOutput").select();
-  document.execCommand("copy");
-  alert("JSON скопирован");
-}
-
-function downloadJson() {
-  const blob = new Blob([document.getElementById("jsonOutput").value], { type: "application/json" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "bugs.json";
-  a.click();
+async function seedFromJson() {
+  if (!confirm("Импортировать баги из data/bugs.json в Firestore? Существующие с тем же ID будут обновлены.")) return;
+  try {
+    const res = await fetch("data/bugs.json");
+    const json = await res.json();
+    await BugsService.seedFromJson(json.bugs || []);
+    alert("Импорт завершён");
+    await Logger.write("admin.seed", "Импорт bugs.json", { count: (json.bugs || []).length });
+  } catch (ex) {
+    alert(ex.message || "Ошибка импорта");
+  }
 }
 
 function switchTab(tab) {
@@ -245,14 +230,10 @@ async function initAdmin() {
 
   document.getElementById("loginForm").addEventListener("submit", adminLogin);
   document.getElementById("bugEditForm").addEventListener("submit", saveBug);
-  document.getElementById("btnCopy").addEventListener("click", copyJson);
-  document.getElementById("btnDownload").addEventListener("click", downloadJson);
   document.getElementById("btnLogout").addEventListener("click", logout);
   document.getElementById("btnNew").addEventListener("click", clearForm);
-  document.getElementById("btnDelete").addEventListener("click", () => {
-    if (selectedIndex >= 0) deleteBug(selectedIndex);
-    else alert("Выберите баг из списка");
-  });
+  document.getElementById("btnDelete").addEventListener("click", deleteSelectedBug);
+  document.getElementById("btnSeed")?.addEventListener("click", seedFromJson);
   document.getElementById("adminSearch")?.addEventListener("input", renderAdminList);
 
   document.querySelectorAll(".admin-tab").forEach(btn => {
@@ -268,7 +249,7 @@ async function initAdmin() {
   AuthService.onAuthChange(async (user, isAdmin) => {
     if (user && isAdmin) {
       showAdmin();
-      await loadAdminData();
+      loadAdminData();
     } else if (user && !isAdmin) {
       showLogin("Этот аккаунт не является администратором");
     }

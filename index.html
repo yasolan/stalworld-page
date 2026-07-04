@@ -23,60 +23,25 @@
   <main class="container">
     <section class="hero">
       <h1>Баг-трекер</h1>
-      <p>Список известных проблем и статус их исправления.</p>
+      <p>Обращения и обсуждения — прямо на сайте. Критические баги выделены красным.</p>
       <div class="stats">
         <div class="stat"><div class="num" id="statTotal">0</div><div class="label">Всего</div></div>
+        <div class="stat stat-critical"><div class="num" id="statCritical">0</div><div class="label">Критических</div></div>
         <div class="stat"><div class="num" id="statOpen">0</div><div class="label">Открытых</div></div>
         <div class="stat"><div class="num" id="statFixed">0</div><div class="label">Исправлено</div></div>
       </div>
     </section>
 
     <div class="filters">
-      <input type="search" id="searchInput" placeholder="Поиск по названию или ID...">
+      <input type="search" id="searchInput" placeholder="Поиск...">
+      <select id="priorityFilter"><option value="">Все приоритеты</option></select>
       <select id="statusFilter"><option value="">Все статусы</option></select>
       <select id="categoryFilter"><option value="">Все категории</option></select>
     </div>
 
     <div id="bugList" class="bug-list"></div>
-    <div id="emptyState" class="empty hidden">Багов не найдено</div>
+    <div id="emptyState" class="empty hidden">Багов пока нет. <a href="report.html">Сообщить первым</a></div>
   </main>
-
-  <div id="modal" class="modal-overlay">
-    <div class="modal modal--wide">
-      <button id="modalClose" class="modal-close" aria-label="Закрыть">&times;</button>
-      <div class="modal-head">
-        <div class="bug-id" id="modalId"></div>
-        <h2 id="modalTitle"></h2>
-        <div id="modalStatus"></div>
-      </div>
-      <div class="modal-body">
-        <div class="modal-main">
-          <div class="modal-section">
-            <h3>Описание</h3>
-            <p id="modalDescription"></p>
-          </div>
-          <div class="modal-section">
-            <h3>Шаги воспроизведения</h3>
-            <pre id="modalSteps"></pre>
-          </div>
-          <div class="modal-section">
-            <h3>Информация</h3>
-            <div id="modalMeta"></div>
-          </div>
-          <div class="modal-section">
-            <h3>Комментарии команды</h3>
-            <div id="modalComments"></div>
-          </div>
-        </div>
-        <div class="modal-side">
-          <div class="modal-section">
-            <h3>Скриншот</h3>
-            <div id="modalScreenshot"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 
   <footer class="site-footer">
     <div class="container"><span id="footerText"></span></div>
@@ -90,6 +55,7 @@
   <script src="js/firebase-app.js"></script>
   <script src="js/auth-service.js"></script>
   <script src="js/logger.js"></script>
+  <script src="js/bugs-service.js"></script>
   <script src="js/nav-auth.js"></script>
   <script src="js/app.js"></script>
 </body>

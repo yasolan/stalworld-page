@@ -2,7 +2,6 @@ const CONFIG = {
   siteName: "STALWORLD Bug Tracker",
   siteUrl: "https://yasolan.github.io/stalworld-page/",
   githubRepo: "yasolan/stalworld-page",
-  githubIssuesUrl: "https://github.com/yasolan/stalworld-page/issues/new",
 
   // Imgur Client-ID для загрузки скриншотов: https://api.imgur.com/oauth2/addclient
   imgurClientId: "",
@@ -38,13 +37,5 @@ const CONFIG = {
     { id: "medium", name: "Средний" },
     { id: "high", name: "Высокий" },
     { id: "critical", name: "Критический" }
-  ],
-
-  // Префикс в заголовке GitHub Issue (видно в списке issues)
-  issuePriorityPrefix: {
-    low: "[LOW]",
-    medium: "[MEDIUM]",
-    high: "[HIGH]",
-    critical: "[CRITICAL]"
-  }
+  ]
 };
