@@ -23,48 +23,84 @@
     <div id="bugLoading" class="muted">Загрузка...</div>
     <div id="bugNotFound" class="empty hidden">Баг не найден</div>
 
-    <article id="bugContent" class="hidden">
+    <article id="bugContent" class="thread hidden">
       <div id="bugBanner"></div>
-      <header class="bug-page-header">
-        <div class="bug-page-head-top">
+
+      <header class="thread-header">
+        <div class="thread-header-top">
           <span class="bug-id" id="bugId"></span>
           <div id="bugBadges"></div>
         </div>
         <h1 id="bugTitle"></h1>
-        <div class="bug-page-meta" id="bugMeta"></div>
+        <div class="thread-toolbar">
+          <div class="thread-stat" id="threadStatReplies">0 ответов</div>
+          <div class="thread-stat" id="threadStatCategory"></div>
+          <div class="thread-stat" id="threadStatStatus"></div>
+          <div class="thread-stat" id="threadStatUpdated"></div>
+        </div>
       </header>
 
-      <div class="bug-page-grid">
-        <section class="bug-page-main">
-          <section class="detail-block">
-            <h2>Описание</h2>
-            <p id="bugDescription"></p>
-          </section>
-          <section class="detail-block">
-            <h2>Шаги воспроизведения</h2>
-            <pre id="bugSteps"></pre>
-          </section>
-          <section class="detail-block" id="bugScreenshotSection">
-            <h2>Скриншот</h2>
-            <div id="bugScreenshot"></div>
-          </section>
-        </section>
-
-        <section class="forum-panel">
-          <h2>Обсуждение <span id="commentCount" class="forum-count"></span></h2>
-          <div id="commentsList" class="forum-thread"></div>
-          <div id="commentLogin" class="notice hidden">
-            <a href="login.html">Войдите</a>, чтобы писать в обсуждении.
-          </div>
-          <form id="commentForm" class="forum-form hidden">
-            <div class="form-group">
-              <label for="commentText">Новое сообщение</label>
-              <textarea id="commentText" required placeholder="Уточнение, воспроизведение, доп. информация..."></textarea>
+      <article class="thread-post thread-post--op" id="opPost">
+        <aside class="post-aside">
+          <div class="post-avatar" id="opAvatar"></div>
+          <div class="post-author-name" id="opAuthorName"></div>
+          <div class="post-role post-role--author">Автор</div>
+          <div class="post-num">#1</div>
+        </aside>
+        <div class="post-main">
+          <header class="post-header">
+            <div class="post-header-left">
+              <strong id="opAuthorHeader"></strong>
+              <span class="post-role-inline">Автор темы</span>
             </div>
-            <button type="submit" class="btn btn-primary">Отправить</button>
+            <time id="opDate"></time>
+          </header>
+          <div class="post-body">
+            <section class="post-section">
+              <h3>Описание</h3>
+              <p id="bugDescription"></p>
+            </section>
+            <section class="post-section" id="bugStepsSection">
+              <h3>Шаги воспроизведения</h3>
+              <pre id="bugSteps"></pre>
+            </section>
+            <section class="post-section hidden" id="bugScreenshotSection">
+              <h3>Скриншот</h3>
+              <div id="bugScreenshot"></div>
+            </section>
+          </div>
+        </div>
+      </article>
+
+      <section class="thread-discussion">
+        <div class="thread-discussion-head">
+          <h2>Обсуждение</h2>
+          <span id="commentCount" class="thread-replies-label"></span>
+          <button type="button" class="btn btn-secondary btn-sm" id="btnScrollReply">Ответить</button>
+        </div>
+
+        <div id="commentsList" class="thread-posts"></div>
+
+        <div id="commentLogin" class="reply-login notice hidden">
+          <a href="login.html">Войдите</a> или <a href="register.html">зарегистрируйтесь</a>, чтобы участвовать в обсуждении.
+        </div>
+
+        <div id="replyBox" class="reply-box hidden">
+          <h3>Быстрый ответ</h3>
+          <form id="commentForm" class="reply-form">
+            <div class="reply-form-row">
+              <div class="post-avatar post-avatar--sm" id="replyAvatar"></div>
+              <div class="reply-form-fields">
+                <textarea id="commentText" required placeholder="Напишите ответ… Уточнения, воспроизведение, доп. информация"></textarea>
+                <div class="reply-form-actions">
+                  <button type="submit" class="btn btn-primary" id="commentSubmitBtn">Опубликовать ответ</button>
+                  <span class="reply-hint">Поддерживается обычный текст, переносы строк сохраняются</span>
+                </div>
+              </div>
+            </div>
           </form>
-        </section>
-      </div>
+        </div>
+      </section>
     </article>
   </main>
 

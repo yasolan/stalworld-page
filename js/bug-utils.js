@@ -103,23 +103,75 @@ function bindScreenshotPreview(fileInputId, previewId, urlInputId) {
   urlInput?.addEventListener("input", update);
 }
 
-function renderComments(comments, containerId) {
-  const el = document.getElementById(containerId);
-  if (!el) return;
-  if (!comments.length) {
-    el.innerHTML = '<p class="muted">Пока нет сообщений. Начните обсуждение.</p>';
-    return;
-  }
-  el.innerHTML = comments.map(c => `
-    <article class="forum-post ${c.isDev ? "forum-post--dev" : ""}">
-      <div class="forum-post-head">
-        <strong>${escapeHtml(c.author)}</strong>
-        ${c.isDev ? '<span class="dev-badge">Команда</span>' : ""}
-        <time>${formatDate(c.createdAt)}</time>
+function avatarInitials(name) {
+  const parts = String(name || "?").trim().split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+  return (parts[0]?.slice(0, 2) || "?").toUpperCase();
+}
+
+function avatarHue(name) {
+  let hash = 0;
+  const str = String(name || "");
+  for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  return Math.abs(hash) % 360;
+}
+
+function avatarStyle(name) {
+  const hue = avatarHue(name);
+  return `background: hsl(${hue}, 45%, 28%); color: hsl(${hue}, 70%, 82%);`;
+}
+
+function pluralReplies(n) {
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+  if (mod100 >= 11 && mod100 <= 19) return `${n} ответов`;
+  if (mod10 === 1) return `${n} ответ`;
+  if (mod10 >= 2 && mod10 <= 4) return `${n} ответа`;
+  return `${n} ответов`;
+}
+
+function renderForumReply(comment, postNumber) {
+  const author = comment.author || "Аноним";
+  const devClass = comment.isDev ? " thread-post--dev" : "";
+  return `
+    <article class="thread-post${devClass}" id="post-${postNumber}">
+      <aside class="post-aside">
+        <div class="post-avatar" style="${avatarStyle(author)}">${avatarInitials(author)}</div>
+        <div class="post-author-name">${escapeHtml(author)}</div>
+        ${comment.isDev ? '<div class="post-role post-role--team">Команда</div>' : '<div class="post-role">Участник</div>'}
+        <div class="post-num">#${postNumber}</div>
+      </aside>
+      <div class="post-main">
+        <header class="post-header">
+          <div class="post-header-left">
+            <strong>${escapeHtml(author)}</strong>
+            ${comment.isDev ? '<span class="dev-badge">Команда</span>' : ""}
+          </div>
+          <time>${formatDate(comment.createdAt)}</time>
+        </header>
+        <div class="post-body post-body--reply">${escapeHtml(comment.text).replace(/\n/g, "<br>")}</div>
       </div>
-      <div class="forum-post-body">${escapeHtml(c.text).replace(/\n/g, "<br>")}</div>
     </article>
-  `).join("");
+  `;
+}
+
+function renderForumReplies(comments, containerId) {
+  const el = document.getElementById(containerId);
+  if (!el) return 0;
+  if (!comments.length) {
+    el.innerHTML = `
+      <div class="thread-empty">
+        <p>Пока нет ответов.</p>
+        <p class="muted">Будьте первым — опишите воспроизведение или задайте уточняющий вопрос.</p>
+      </div>`;
+    return 0;
+  }
+  el.innerHTML = comments.map((c, i) => renderForumReply(c, i + 2)).join("");
+  return comments.length;
+}
+
+function renderComments(comments, containerId) {
+  return renderForumReplies(comments, containerId);
 }
 
 function fillPrioritySelect(selectId, defaultValue) {
