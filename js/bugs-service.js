@@ -60,6 +60,45 @@ const BugsService = {
     });
   },
 
+  async updateBugStatus(bugId, status) {
+    await this.updateBug(bugId, { status });
+  },
+
+  subscribeBug(bugId, callback) {
+    return FirebaseApp.db.collection("bugs").doc(bugId).onSnapshot(snap => {
+      if (!snap.exists) {
+        callback(null);
+        return;
+      }
+      callback({ docId: snap.id, ...snap.data() });
+    }, err => console.error("bug subscribe:", err));
+  },
+
+  async getBugsByReporter(reporterId, reporterName) {
+    let bugs = [];
+    if (reporterId) {
+      const snap = await FirebaseApp.db.collection("bugs")
+        .where("reporterId", "==", reporterId)
+        .get();
+      bugs = snap.docs.map(d => ({ docId: d.id, ...d.data() }));
+    }
+    if (!bugs.length && reporterName) {
+      const snap = await FirebaseApp.db.collection("bugs")
+        .where("reporter", "==", reporterName)
+        .get();
+      bugs = snap.docs.map(d => ({ docId: d.id, ...d.data() }));
+    }
+    return bugs.sort((a, b) => {
+      const ta = a.createdAt?.toMillis?.() || 0;
+      const tb = b.createdAt?.toMillis?.() || 0;
+      return tb - ta;
+    });
+  },
+
+  isListHidden(status) {
+    return status === "closed";
+  },
+
   async deleteBug(bugId) {
     const comments = await FirebaseApp.db.collection("bugs").doc(bugId).collection("comments").get();
     const batch = FirebaseApp.db.batch();

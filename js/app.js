@@ -1,11 +1,16 @@
 let allBugs = [];
 let bugsUnsub = null;
 
+function listBugs(bugs) {
+  return bugs.filter(b => !BugsService.isListHidden(b.status));
+}
+
 function renderStats(bugs) {
-  const open = bugs.filter(b => b.status === "open" || b.status === "in_progress").length;
-  const fixed = bugs.filter(b => b.status === "fixed").length;
-  const critical = bugs.filter(b => b.priority === "critical" && b.status !== "fixed" && b.status !== "closed").length;
-  document.getElementById("statTotal").textContent = bugs.length;
+  const visible = listBugs(bugs);
+  const open = visible.filter(b => b.status === "open" || b.status === "in_progress").length;
+  const fixed = visible.filter(b => b.status === "fixed").length;
+  const critical = visible.filter(b => b.priority === "critical" && b.status !== "fixed").length;
+  document.getElementById("statTotal").textContent = visible.length;
   document.getElementById("statOpen").textContent = open;
   document.getElementById("statFixed").textContent = fixed;
   if (document.getElementById("statCritical")) {
@@ -17,16 +22,17 @@ function renderBugList(bugs) {
   const list = document.getElementById("bugList");
   const empty = document.getElementById("emptyState");
   const cats = CATEGORY_MAP();
+  const visible = listBugs(bugs);
 
-  if (!bugs.length) {
+  if (!visible.length) {
     list.innerHTML = "";
     empty.classList.remove("hidden");
     return;
   }
 
   empty.classList.add("hidden");
-  list.innerHTML = bugs.map(bug => `
-    <a href="bug.html?id=${encodeURIComponent(bug.id)}" class="bug-card bug-card--${bug.status} bug-card--priority-${bug.priority}">
+  list.innerHTML = visible.map(bug => `
+    <div class="bug-card bug-card--${bug.status} bug-card--priority-${bug.priority}" data-href="bug.html?id=${encodeURIComponent(bug.id)}" tabindex="0" role="link">
       ${priorityBanner(bug.priority)}
       <div class="bug-card-top">
         <div class="bug-card-main">
@@ -43,12 +49,12 @@ function renderBugList(bugs) {
         <div class="bug-meta">${statusBadge(bug.status)}</div>
         <div class="bug-footer">
           <span>${cats[bug.category] || bug.category}</span>
-          <span>${escapeHtml(bug.reporter || "—")}</span>
+          <span class="bug-footer-user">${userLink(bug.reporterId, bug.reporter || "—")}</span>
           <span>${bug.commentCount || 0} сообщ.</span>
           <span>${formatDateShort(bug.updatedAt || bug.createdAt)}</span>
         </div>
       </div>
-    </a>
+    </div>
   `).join("");
 }
 
@@ -58,12 +64,12 @@ function filterBugs(bugs) {
   const category = document.getElementById("categoryFilter").value;
   const priority = document.getElementById("priorityFilter")?.value || "";
 
-  return bugs.filter(b => {
+  return listBugs(bugs).filter(b => {
     if (status && b.status !== status) return false;
     if (category && b.category !== category) return false;
     if (priority && b.priority !== priority) return false;
     if (search) {
-      const hay = `${b.id} ${b.title} ${b.description}`.toLowerCase();
+      const hay = `${b.id} ${b.title} ${b.description} ${b.reporter || ""}`.toLowerCase();
       if (!hay.includes(search)) return false;
     }
     return true;
@@ -76,6 +82,7 @@ function fillFilters() {
   const priorityFilter = document.getElementById("priorityFilter");
 
   Object.entries(CONFIG.labels).forEach(([id, name]) => {
+    if (id === "closed") return;
     statusFilter.innerHTML += `<option value="${id}">${name}</option>`;
   });
   CONFIG.categories.forEach(c => {
@@ -104,6 +111,21 @@ async function init() {
     allBugs = bugs;
     renderStats(allBugs);
     renderBugList(filterBugs(allBugs));
+  });
+
+  document.getElementById("bugList").addEventListener("click", e => {
+    if (e.target.closest(".user-link")) return;
+    const card = e.target.closest(".bug-card[data-href]");
+    if (card) window.location.href = card.dataset.href;
+  });
+
+  document.getElementById("bugList").addEventListener("keydown", e => {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    const card = e.target.closest(".bug-card[data-href]");
+    if (card && !e.target.closest(".user-link")) {
+      e.preventDefault();
+      window.location.href = card.dataset.href;
+    }
   });
 
   ["searchInput", "statusFilter", "categoryFilter", "priorityFilter"].forEach(id => {

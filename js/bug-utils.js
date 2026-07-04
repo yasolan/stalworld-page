@@ -64,6 +64,13 @@ function bindScreenshotPreview(urlInputId, previewId) {
   urlInput.addEventListener("input", update);
 }
 
+function userLink(uid, name, extraClass) {
+  const label = escapeHtml(name || "—");
+  if (!uid && !name) return label;
+  const cls = "user-link" + (extraClass ? " " + extraClass : "");
+  return `<button type="button" class="${cls}" data-user-id="${escapeHtml(uid || "")}" data-user-name="${escapeHtml(name || "")}">${label}</button>`;
+}
+
 function avatarInitials(name) {
   const parts = String(name || "?").trim().split(/\s+/).filter(Boolean);
   if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
@@ -94,18 +101,19 @@ function pluralReplies(n) {
 function renderForumReply(comment, postNumber) {
   const author = comment.author || "Аноним";
   const devClass = comment.isDev ? " thread-post--dev" : "";
+  const authorLink = userLink(comment.authorId, author);
   return `
     <article class="thread-post${devClass}" id="post-${postNumber}">
       <aside class="post-aside">
         <div class="post-avatar" style="${avatarStyle(author)}">${avatarInitials(author)}</div>
-        <div class="post-author-name">${escapeHtml(author)}</div>
+        <div class="post-author-name">${authorLink}</div>
         ${comment.isDev ? '<div class="post-role post-role--team">Команда</div>' : '<div class="post-role">Участник</div>'}
         <div class="post-num">#${postNumber}</div>
       </aside>
       <div class="post-main">
         <header class="post-header">
           <div class="post-header-left">
-            <strong>${escapeHtml(author)}</strong>
+            ${authorLink}
             ${comment.isDev ? '<span class="dev-badge">Команда</span>' : ""}
           </div>
           <time>${formatDate(comment.createdAt)}</time>

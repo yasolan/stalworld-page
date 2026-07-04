@@ -871,6 +871,14 @@ a.bug-card {
   text-decoration: none;
 }
 
+.bug-card[data-href] {
+  cursor: pointer;
+}
+
+.bug-card[data-href]:hover {
+  text-decoration: none;
+}
+
 a.bug-card:hover { text-decoration: none; }
 
 /* Bug page + forum thread */
@@ -1263,3 +1271,173 @@ a.bug-card:hover { text-decoration: none; }
 .admin-bug-item--high { border-left: 3px solid var(--orange); }
 
 .priority-select option[value="critical"] { color: #c44; font-weight: bold; }
+
+/* User profile modal */
+.modal--profile {
+  max-width: 520px;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.user-profile-head {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.user-profile-avatar {
+  width: 72px;
+  height: 72px;
+  font-size: 1.3rem;
+}
+
+.user-profile-head h2 {
+  font-size: 1.25rem;
+  margin-bottom: 4px;
+}
+
+.user-profile-stats {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.user-stat {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  min-width: 80px;
+  text-align: center;
+}
+
+.user-stat .num {
+  display: block;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.user-stat .label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.user-profile-section-title {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.user-profile-bugs {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.user-bug-item {
+  display: block;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.user-bug-item:hover {
+  border-color: var(--accent-dim);
+  background: var(--bg-hover);
+  text-decoration: none;
+}
+
+.user-bug-item-top {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.user-bug-item-title {
+  font-weight: 600;
+  font-size: 0.92rem;
+  margin-bottom: 4px;
+}
+
+.user-bug-item-meta {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.user-bug-item--closed { opacity: 0.65; }
+
+.user-link {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--accent);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.user-link:hover { color: #d4b040; }
+
+.user-link--strong {
+  font-size: 1rem;
+  text-decoration: none;
+}
+
+.user-link--strong:hover { text-decoration: underline; }
+
+.bug-footer-user .user-link {
+  font-weight: 400;
+  font-size: inherit;
+}
+
+.post-author-name .user-link {
+  font-size: 0.82rem;
+  word-break: break-word;
+}
+
+/* Admin quick actions on bug page */
+.admin-quick-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: 16px;
+  padding: 12px 14px;
+  background: #1f1c14;
+  border: 1px solid var(--accent-dim);
+  border-radius: 8px;
+}
+
+.admin-quick-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  margin-right: 4px;
+}
+
+.btn-sm {
+  padding: 7px 12px;
+  font-size: 0.82rem;
+}
+
+.notice-closed {
+  margin-top: 14px;
+  background: #2a2a2a;
+  border-color: var(--text-muted);
+}

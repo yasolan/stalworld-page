@@ -1,5 +1,6 @@
 let currentBugId = null;
 let currentBug = null;
+let bugUnsub = null;
 let commentsUnsub = null;
 let currentUser = null;
 let isAdmin = false;
@@ -20,7 +21,6 @@ function updateThreadStats(bug, replyCount) {
 function renderBug(bug) {
   currentBug = bug;
   const author = bug.reporter || "—";
-  const cats = CATEGORY_MAP();
 
   document.getElementById("bugBanner").innerHTML = priorityBanner(bug.priority);
   document.getElementById("bugId").textContent = bug.id;
@@ -30,8 +30,8 @@ function renderBug(bug) {
 
   document.getElementById("opAvatar").textContent = avatarInitials(author);
   document.getElementById("opAvatar").style.cssText = avatarStyle(author);
-  document.getElementById("opAuthorName").textContent = author;
-  document.getElementById("opAuthorHeader").textContent = author;
+  document.getElementById("opAuthorName").innerHTML = userLink(bug.reporterId, author);
+  document.getElementById("opAuthorHeader").innerHTML = userLink(bug.reporterId, author, "user-link--strong");
   document.getElementById("opDate").textContent = formatDate(bug.createdAt);
 
   document.getElementById("bugDescription").textContent = bug.description || "—";
@@ -49,7 +49,26 @@ function renderBug(bug) {
     shotSection.classList.add("hidden");
   }
 
+  const closedNotice = document.getElementById("closedNotice");
+  if (closedNotice) {
+    closedNotice.classList.toggle("hidden", bug.status !== "closed");
+  }
+
   updateThreadStats(bug, bug.commentCount || 0);
+  updateAdminActions(bug);
+}
+
+function updateAdminActions(bug) {
+  const bar = document.getElementById("adminActions");
+  if (!bar) return;
+  bar.classList.toggle("hidden", !isAdmin);
+
+  if (!isAdmin) return;
+
+  document.getElementById("btnCloseTicket").classList.toggle("hidden", bug.status === "closed");
+  document.getElementById("btnReopenTicket").classList.toggle("hidden", bug.status !== "closed");
+  document.getElementById("btnMarkFixed").classList.toggle("hidden", bug.status === "fixed" || bug.status === "closed");
+  document.getElementById("btnMarkProgress").classList.toggle("hidden", bug.status === "in_progress" || bug.status === "closed");
 }
 
 function updateReplyBox() {
@@ -63,6 +82,32 @@ function updateReplyBox() {
     const avatar = document.getElementById("replyAvatar");
     avatar.textContent = avatarInitials(name);
     avatar.style.cssText = avatarStyle(name);
+  }
+
+  if (currentBug) updateAdminActions(currentBug);
+}
+
+async function setBugStatus(status, label) {
+  if (!isAdmin || !currentBugId) return;
+  if (!confirm(`${label}?`)) return;
+
+  const btn = document.activeElement;
+  if (btn?.tagName === "BUTTON") btn.disabled = true;
+
+  try {
+    await BugsService.updateBugStatus(currentBugId, status);
+    await Logger.write("admin.bug_status", label, { bugId: currentBugId, status });
+    if (status === "closed") {
+      setTimeout(() => {
+        if (confirm("Тикет закрыт. Вернуться к списку багов?")) {
+          window.location.href = "index.html";
+        }
+      }, 300);
+    }
+  } catch (ex) {
+    alert(ex.message || "Не удалось обновить статус");
+  } finally {
+    if (btn?.tagName === "BUTTON") btn.disabled = false;
   }
 }
 
@@ -113,16 +158,17 @@ async function initBugPage() {
     return;
   }
 
-  const bug = await BugsService.getBug(currentBugId);
   document.getElementById("bugLoading").classList.add("hidden");
-
-  if (!bug) {
-    document.getElementById("bugNotFound").classList.remove("hidden");
-    return;
-  }
-
   document.getElementById("bugContent").classList.remove("hidden");
-  renderBug(bug);
+
+  bugUnsub = BugsService.subscribeBug(currentBugId, bug => {
+    if (!bug) {
+      document.getElementById("bugContent").classList.add("hidden");
+      document.getElementById("bugNotFound").classList.remove("hidden");
+      return;
+    }
+    renderBug(bug);
+  });
 
   commentsUnsub = BugsService.subscribeComments(currentBugId, comments => {
     const count = renderForumReplies(comments, "commentsList");
@@ -131,6 +177,11 @@ async function initBugPage() {
 
   document.getElementById("commentForm").addEventListener("submit", submitComment);
   document.getElementById("btnScrollReply").addEventListener("click", scrollToReply);
+
+  document.getElementById("btnCloseTicket")?.addEventListener("click", () => setBugStatus("closed", "Закрыть тикет"));
+  document.getElementById("btnReopenTicket")?.addEventListener("click", () => setBugStatus("open", "Открыть тикет снова"));
+  document.getElementById("btnMarkFixed")?.addEventListener("click", () => setBugStatus("fixed", "Отметить как исправленный"));
+  document.getElementById("btnMarkProgress")?.addEventListener("click", () => setBugStatus("in_progress", "Взять в работу"));
 
   AuthService.onAuthChange(async (user, admin) => {
     currentUser = user;

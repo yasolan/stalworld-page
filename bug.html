@@ -38,6 +38,14 @@
           <div class="thread-stat" id="threadStatStatus"></div>
           <div class="thread-stat" id="threadStatUpdated"></div>
         </div>
+        <div id="closedNotice" class="notice notice-closed hidden">Этот тикет закрыт и скрыт из общего списка.</div>
+        <div id="adminActions" class="admin-quick-actions hidden">
+          <span class="admin-quick-label">Админ</span>
+          <button type="button" class="btn btn-secondary btn-sm" id="btnMarkProgress">В работе</button>
+          <button type="button" class="btn btn-secondary btn-sm" id="btnMarkFixed">Исправлен</button>
+          <button type="button" class="btn btn-danger btn-sm" id="btnCloseTicket">Закрыть тикет</button>
+          <button type="button" class="btn btn-primary btn-sm" id="btnReopenTicket">Открыть снова</button>
+        </div>
       </header>
 
       <article class="thread-post thread-post--op" id="opPost">
@@ -117,6 +125,7 @@
   <script src="js/auth-service.js"></script>
   <script src="js/logger.js"></script>
   <script src="js/bugs-service.js"></script>
+  <script src="js/user-profile.js"></script>
   <script src="js/nav-auth.js"></script>
   <script src="js/bug-page.js"></script>
 </body>
