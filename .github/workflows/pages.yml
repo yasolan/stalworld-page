@@ -1,0 +1,58 @@
+name: Deploy site to Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - name: Deploy (attempt 1)
+        id: deploy1
+        uses: actions/deploy-pages@v4
+        continue-on-error: true
+
+      - name: Wait 60s
+        if: steps.deploy1.outcome != 'success'
+        run: sleep 60
+
+      - name: Deploy (attempt 2)
+        id: deploy2
+        if: steps.deploy1.outcome != 'success'
+        uses: actions/deploy-pages@v4
+        continue-on-error: true
+
+      - name: Wait 60s
+        if: steps.deploy1.outcome != 'success' && steps.deploy2.outcome != 'success'
+        run: sleep 60
+
+      - name: Deploy (attempt 3)
+        id: deployment
+        if: steps.deploy1.outcome != 'success' && steps.deploy2.outcome != 'success'
+        uses: actions/deploy-pages@v4
+
+      - name: Verify deploy succeeded
+        if: steps.deploy1.outcome != 'success' && steps.deploy2.outcome != 'success' && steps.deployment.outcome != 'success'
+        run: exit 1
