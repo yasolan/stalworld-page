@@ -3,11 +3,17 @@ const CONFIG = {
   siteUrl: "https://yasolan.github.io/stalworld-page/",
   githubRepo: "yasolan/stalworld-page",
 
-  // Макс. размер загружаемого скриншота (МБ). ImgBB принимает до 32 МБ.
+  // Макс. размер загружаемого скриншота (МБ)
   maxUploadMb: 10,
 
-  // Бесплатный ключ: https://api.imgbb.com/ → Get API key
-  imgbbApiKey: "",
+  // Cloudinary — бесплатно, загрузка прямо с сайта (без бэкенда)
+  // 1) https://cloudinary.com → регистрация
+  // 2) Settings → Upload → Add upload preset → Signing: Unsigned
+  // 3) cloud name — на главной дашборда
+  cloudinary: {
+    cloudName: "",
+    uploadPreset: ""
+  },
   firebase: {
     apiKey: "AIzaSyAzCRvcQzuh3zfHWBP4EAqqsln10EvYLqU",
     authDomain: "stalworld-page.firebaseapp.com",

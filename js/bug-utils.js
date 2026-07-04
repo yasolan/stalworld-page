@@ -67,8 +67,9 @@ async function uploadScreenshot(file) {
     throw new Error("Войдите в аккаунт, чтобы загрузить скриншот");
   }
 
-  if (!CONFIG.imgbbApiKey) {
-    throw new Error("Загрузка не настроена: добавьте imgbbApiKey в config.js или вставьте ссылку вручную");
+  const { cloudName, uploadPreset } = CONFIG.cloudinary || {};
+  if (!cloudName || !uploadPreset) {
+    throw new Error("Загрузка не настроена: укажите cloudinary.cloudName и uploadPreset в config.js, или вставьте ссылку вручную");
   }
 
   const maxBytes = (CONFIG.maxUploadMb || 10) * 1024 * 1024;
@@ -80,22 +81,32 @@ async function uploadScreenshot(file) {
     throw new Error("Можно загружать только изображения");
   }
 
-  const base64 = await fileToBase64(file);
   const body = new FormData();
-  body.append("image", base64.split(",")[1]);
-  body.append("name", file.name || "screenshot");
+  body.append("file", file);
+  body.append("upload_preset", uploadPreset);
 
-  const res = await fetch(`https://api.imgbb.com/1/upload?key=${encodeURIComponent(CONFIG.imgbbApiKey)}`, {
-    method: "POST",
-    body
-  });
-  const data = await res.json();
-
-  if (!data.success) {
-    throw new Error(data.error?.message || data.status_txt || "Не удалось загрузить скриншот");
+  let res;
+  try {
+    res = await fetch(`https://api.cloudinary.com/v1_1/${encodeURIComponent(cloudName)}/image/upload`, {
+      method: "POST",
+      body
+    });
+  } catch (err) {
+    throw new Error("Не удалось связаться с Cloudinary. Проверьте интернет или вставьте ссылку вручную.");
   }
 
-  return data.data.url || data.data.display_url;
+  let data;
+  try {
+    data = await res.json();
+  } catch (err) {
+    throw new Error("Cloudinary вернул некорректный ответ");
+  }
+
+  if (!res.ok || data.error) {
+    throw new Error(data.error?.message || `Ошибка загрузки (${res.status})`);
+  }
+
+  return data.secure_url || data.url;
 }
 
 function bindScreenshotPreview(fileInputId, previewId, urlInputId) {

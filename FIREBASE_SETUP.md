@@ -108,20 +108,27 @@ Firebase → Authentication → Settings → Authorized domains:
 
 
 
-## 6. Скриншоты (ImgBB, бесплатно)
+## 6. Скриншоты (Cloudinary, бесплатно)
 
-1. Зайди на https://api.imgbb.com/
-2. Зарегистрируйся → **Get API key**
-3. Вставь ключ в `js/config.js`:
+ImgBB и похожие сервисы часто **не работают из браузера** (CORS). Cloudinary — нормальный вариант для GitHub Pages.
+
+1. Регистрация: https://cloudinary.com (бесплатный тариф, карта не нужна)
+2. На дашборде скопируй **Cloud name**
+3. **Settings → Upload → Add upload preset**
+   - **Signing Mode: Unsigned**
+   - Save → скопируй **Preset name**
+4. В `js/config.js`:
 
 ```js
-imgbbApiKey: "твой_ключ",
+cloudinary: {
+  cloudName: "твой_cloud_name",
+  uploadPreset: "твой_unsigned_preset"
+},
 ```
 
-4. Сделай push — загрузка файлов на форме «Сообщить» заработает
+5. Push — загрузка файлов заработает
 
-ImgBB бесплатный: до 32 МБ на картинку, прямые ссылки — нормально отображаются на сайте.
-Можно также вставить **любую прямую ссылку** на изображение вручную.
+Можно также вставить **прямую ссылку** на картинку вручную (Discord, VK, любой хостинг).
 
 ## 7. Импорт старых багов
 
