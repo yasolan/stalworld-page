@@ -15,6 +15,20 @@ function setVisible(el, visible) {
   el.classList.toggle("hidden", !visible);
 }
 
+function $(id) {
+  return document.getElementById(id);
+}
+
+function setText(id, text) {
+  const el = $(id);
+  if (el) el.textContent = text;
+}
+
+function setHtml(id, html) {
+  const el = $(id);
+  if (el) el.innerHTML = html;
+}
+
 function updateThreadStats(bug, replyCount) {
   const replies = document.getElementById("threadStatReplies");
   if (replies) replies.textContent = pluralReplies(Number(replyCount) || 0);
@@ -45,10 +59,10 @@ function updateThreadStats(bug, replyCount) {
 
 function renderBug(bug) {
   if (!bug?.title) {
-    document.getElementById("bugLoading").classList.add("hidden");
-    document.getElementById("bugContent").classList.add("hidden");
-    document.getElementById("bugNotFound").textContent = "Баг повреждён или не найден (ID: " + (bug?.id || currentBugId) + ")";
-    document.getElementById("bugNotFound").classList.remove("hidden");
+    setVisible($("bugLoading"), false);
+    setVisible($("bugContent"), false);
+    setText("bugNotFound", "Баг повреждён или не найден (ID: " + (bug?.id || currentBugId) + ")");
+    setVisible($("bugNotFound"), true);
     return;
   }
 
@@ -56,38 +70,36 @@ function renderBug(bug) {
   currentBugId = BugsService.docId(bug);
   const author = bug.reporter || "—";
 
-  document.getElementById("bugBanner").innerHTML = priorityBanner(bug.priority);
-  document.getElementById("bugId").textContent = bug.id;
-  document.getElementById("bugBadges").innerHTML = priorityBadge(bug.priority, true) + " " + statusBadge(bug.status);
-  document.getElementById("bugTitle").textContent = bug.title;
+  setHtml("bugBanner", priorityBanner(bug.priority));
+  setText("bugId", bug.id);
+  setHtml("bugBadges", priorityBadge(bug.priority, true) + " " + statusBadge(bug.status));
+  setText("bugTitle", bug.title);
   document.title = `${bug.id} — ${bug.title}`;
 
-  document.getElementById("opAvatar").textContent = avatarInitials(author);
-  document.getElementById("opAvatar").style.cssText = avatarStyle(author);
-  document.getElementById("opAuthorName").innerHTML = userLink(bug.reporterId, author);
-  document.getElementById("opAuthorHeader").innerHTML = userLink(bug.reporterId, author, "user-link--strong");
-  document.getElementById("opDate").textContent = formatDate(bug.createdAt);
+  setText("opAvatar", avatarInitials(author));
+  const opAvatar = $("opAvatar");
+  if (opAvatar) opAvatar.style.cssText = avatarStyle(author);
+  setHtml("opAuthorName", userLink(bug.reporterId, author));
+  setHtml("opAuthorHeader", userLink(bug.reporterId, author, "user-link--strong"));
+  setText("opDate", formatDate(bug.createdAt));
 
-  document.getElementById("bugDescription").textContent = bug.description || "—";
-  document.getElementById("bugSteps").textContent = bug.steps || "—";
+  setText("bugDescription", bug.description || "—");
+  setText("bugSteps", bug.steps || "—");
 
   const steps = textField(bug.steps);
-  const stepsSection = document.getElementById("bugStepsSection");
-  setVisible(stepsSection, !!steps);
+  setVisible($("bugStepsSection"), !!steps);
 
   const coords = formatCoordinates(bug.coordinates);
-  const coordsSection = document.getElementById("bugCoordsSection");
-  const coordsEl = document.getElementById("bugCoordinates");
+  const coordsEl = $("bugCoordinates");
   if (coords && coordsEl) coordsEl.innerHTML = coordinatesBlock(coords);
-  setVisible(coordsSection, !!(coords && coordsEl));
+  setVisible($("bugCoordsSection"), !!(coords && coordsEl));
 
   const screenshot = textField(bug.screenshot);
-  const shotSection = document.getElementById("bugScreenshotSection");
-  const shotEl = document.getElementById("bugScreenshot");
+  const shotEl = $("bugScreenshot");
   if (screenshot && shotEl) shotEl.innerHTML = screenshotBlock(screenshot, bug.title);
-  setVisible(shotSection, !!(screenshot && shotEl));
+  setVisible($("bugScreenshotSection"), !!(screenshot && shotEl));
 
-  const closedNotice = document.getElementById("closedNotice");
+  const closedNotice = $("closedNotice");
   if (closedNotice) {
     closedNotice.classList.toggle("hidden", bug.status !== "closed");
   }
@@ -116,15 +128,17 @@ function updateAdminActions(bug) {
 
 function updateReplyBox() {
   const loggedIn = !!currentUser;
-  document.getElementById("replyBox").classList.toggle("hidden", !loggedIn);
-  document.getElementById("commentLogin").classList.toggle("hidden", loggedIn);
-  document.getElementById("btnScrollReply").classList.toggle("hidden", !loggedIn);
+  setVisible($("replyBox"), loggedIn);
+  setVisible($("commentLogin"), !loggedIn);
+  setVisible($("btnScrollReply"), loggedIn);
 
   if (loggedIn && currentProfile) {
     const name = currentProfile.nickname || currentUser.email.split("@")[0];
-    const avatar = document.getElementById("replyAvatar");
-    avatar.textContent = avatarInitials(name);
-    avatar.style.cssText = avatarStyle(name);
+    const avatar = $("replyAvatar");
+    if (avatar) {
+      avatar.textContent = avatarInitials(name);
+      avatar.style.cssText = avatarStyle(name);
+    }
   }
 
   if (currentBug) updateAdminActions(currentBug);
