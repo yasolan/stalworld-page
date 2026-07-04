@@ -21,7 +21,7 @@ function initNavAuth() {
     const profile = await AuthService.getProfile(user.uid);
     const name = profile?.nickname || user.email.split("@")[0];
     slot.innerHTML = `
-      <span class="auth-user">${escapeHtml(name)}</span>
+      ${typeof userLink === "function" ? userLink(user.uid, name, "auth-user") : `<span class="auth-user">${escapeHtml(name)}</span>`}
       ${isAdmin ? '<a href="admin.html">Админка</a>' : ""}
       <a href="#" id="navLogout">Выйти</a>
     `;
