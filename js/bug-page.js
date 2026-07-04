@@ -10,21 +10,37 @@ function getBugIdFromUrl() {
   return new URLSearchParams(location.search).get("id");
 }
 
+function setVisible(el, visible) {
+  if (!el) return;
+  el.classList.toggle("hidden", !visible);
+}
+
 function updateThreadStats(bug, replyCount) {
-  document.getElementById("threadStatReplies").textContent = pluralReplies(replyCount);
-  document.getElementById("threadStatCategory").textContent = CATEGORY_MAP()[bug.category] || bug.category;
+  const replies = document.getElementById("threadStatReplies");
+  if (replies) replies.textContent = pluralReplies(Number(replyCount) || 0);
+
+  const category = document.getElementById("threadStatCategory");
+  if (category) category.textContent = CATEGORY_MAP()[bug.category] || bug.category;
+
   const coordsEl = document.getElementById("threadStatCoords");
+  const coords = formatCoordinates(bug.coordinates);
   if (coordsEl) {
-    if (bug.coordinates?.trim()) {
-      coordsEl.textContent = "📍 " + formatCoordinates(bug.coordinates);
-      coordsEl.classList.remove("hidden");
+    if (coords) {
+      coordsEl.textContent = "📍 " + coords;
+      setVisible(coordsEl, true);
     } else {
-      coordsEl.classList.add("hidden");
+      setVisible(coordsEl, false);
     }
   }
-  document.getElementById("threadStatStatus").innerHTML = statusBadge(bug.status);
-  document.getElementById("threadStatUpdated").textContent = "Обновлено: " + formatDate(bug.updatedAt || bug.createdAt);
-  document.getElementById("commentCount").textContent = replyCount ? pluralReplies(replyCount) : "нет ответов";
+
+  const status = document.getElementById("threadStatStatus");
+  if (status) status.innerHTML = statusBadge(bug.status);
+
+  const updated = document.getElementById("threadStatUpdated");
+  if (updated) updated.textContent = "Обновлено: " + formatDate(bug.updatedAt || bug.createdAt);
+
+  const count = document.getElementById("commentCount");
+  if (count) count.textContent = replyCount ? pluralReplies(Number(replyCount) || 0) : "нет ответов";
 }
 
 function renderBug(bug) {
@@ -55,25 +71,21 @@ function renderBug(bug) {
   document.getElementById("bugDescription").textContent = bug.description || "—";
   document.getElementById("bugSteps").textContent = bug.steps || "—";
 
+  const steps = textField(bug.steps);
   const stepsSection = document.getElementById("bugStepsSection");
-  if (!bug.steps?.trim()) stepsSection.classList.add("hidden");
-  else stepsSection.classList.remove("hidden");
+  setVisible(stepsSection, !!steps);
 
+  const coords = formatCoordinates(bug.coordinates);
   const coordsSection = document.getElementById("bugCoordsSection");
-  if (bug.coordinates?.trim()) {
-    document.getElementById("bugCoordinates").innerHTML = coordinatesBlock(bug.coordinates);
-    coordsSection.classList.remove("hidden");
-  } else {
-    coordsSection.classList.add("hidden");
-  }
+  const coordsEl = document.getElementById("bugCoordinates");
+  if (coords && coordsEl) coordsEl.innerHTML = coordinatesBlock(coords);
+  setVisible(coordsSection, !!(coords && coordsEl));
 
+  const screenshot = textField(bug.screenshot);
   const shotSection = document.getElementById("bugScreenshotSection");
-  if (bug.screenshot) {
-    document.getElementById("bugScreenshot").innerHTML = screenshotBlock(bug.screenshot, bug.title);
-    shotSection.classList.remove("hidden");
-  } else {
-    shotSection.classList.add("hidden");
-  }
+  const shotEl = document.getElementById("bugScreenshot");
+  if (screenshot && shotEl) shotEl.innerHTML = screenshotBlock(screenshot, bug.title);
+  setVisible(shotSection, !!(screenshot && shotEl));
 
   const closedNotice = document.getElementById("closedNotice");
   if (closedNotice) {
@@ -91,10 +103,15 @@ function updateAdminActions(bug) {
 
   if (!isAdmin) return;
 
-  document.getElementById("btnCloseTicket").classList.toggle("hidden", bug.status === "closed");
-  document.getElementById("btnReopenTicket").classList.toggle("hidden", bug.status !== "closed");
-  document.getElementById("btnMarkFixed").classList.toggle("hidden", bug.status === "fixed" || bug.status === "closed");
-  document.getElementById("btnMarkProgress").classList.toggle("hidden", bug.status === "in_progress" || bug.status === "closed");
+  const toggle = (id, hidden) => {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle("hidden", hidden);
+  };
+
+  toggle("btnCloseTicket", bug.status === "closed");
+  toggle("btnReopenTicket", bug.status !== "closed");
+  toggle("btnMarkFixed", bug.status === "fixed" || bug.status === "closed");
+  toggle("btnMarkProgress", bug.status === "in_progress" || bug.status === "closed");
 }
 
 function updateReplyBox() {

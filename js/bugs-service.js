@@ -2,10 +2,17 @@ const BugsService = {
   normalizeBug(data, docId) {
     if (!data) return null;
     const id = data.id || docId;
+    const str = v => (v == null ? "" : String(v));
     return {
       ...data,
       docId: docId || data.docId || id,
       id,
+      title: str(data.title),
+      description: str(data.description),
+      steps: str(data.steps),
+      screenshot: str(data.screenshot),
+      coordinates: str(data.coordinates),
+      reporter: str(data.reporter),
       status: data.status || "open",
       priority: data.priority || "medium",
       category: data.category || "other"

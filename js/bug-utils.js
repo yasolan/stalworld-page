@@ -7,6 +7,11 @@ function escapeHtml(str) {
   return d.innerHTML;
 }
 
+function textField(value) {
+  if (value == null) return "";
+  return String(value).trim();
+}
+
 function truncate(str, len) {
   if (!str || str.length <= len) return str || "";
   return str.slice(0, len) + "…";
@@ -52,8 +57,7 @@ function screenshotBlock(url, alt) {
 }
 
 function formatCoordinates(coords) {
-  if (!coords?.trim()) return "";
-  return coords.trim();
+  return textField(coords);
 }
 
 function coordinatesBlock(coords) {
