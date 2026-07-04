@@ -1,0 +1,64 @@
+{
+  "bugs": [
+    {
+      "id": "BUG-001",
+      "title": "Пример: не загружается текстура на карте",
+      "description": "На локации «Болото» часть блоков отображается фиолетовым цветом после входа на сервер.",
+      "steps": "1. Зайти на сервер\n2. Телепорт на болото\n3. Осмотреть зону у моста",
+      "category": "gameplay",
+      "priority": "medium",
+      "status": "open",
+      "version": "STALKER V4",
+      "platform": "Windows",
+      "reporter": "PlayerOne",
+      "createdAt": "2026-07-01",
+      "updatedAt": "2026-07-01",
+      "votes": 3,
+      "comments": [
+        {
+          "author": "DevTeam",
+          "text": "Воспроизводим, передали арт-отделу.",
+          "date": "2026-07-02"
+        }
+      ]
+    },
+    {
+      "id": "BUG-002",
+      "title": "Пример: кнопка входа не реагирует на мобильном",
+      "description": "На экранах меньше 375px кнопка «Войти» не нажимается.",
+      "steps": "1. Открыть /login с телефона\n2. Нажать «Войти»",
+      "category": "ui",
+      "priority": "high",
+      "status": "in_progress",
+      "version": "web",
+      "platform": "Android Chrome",
+      "reporter": "MobileUser",
+      "createdAt": "2026-06-28",
+      "updatedAt": "2026-07-03",
+      "votes": 7,
+      "comments": []
+    },
+    {
+      "id": "BUG-003",
+      "title": "Пример: favicon слишком тяжёлый",
+      "description": "favicon.ico весит 361 KB и замедляет первую загрузку сайта.",
+      "steps": "1. Открыть DevTools → Network\n2. Обновить главную",
+      "category": "other",
+      "priority": "low",
+      "status": "fixed",
+      "version": "site",
+      "platform": "All",
+      "reporter": "QA",
+      "createdAt": "2026-07-01",
+      "updatedAt": "2026-07-04",
+      "votes": 1,
+      "comments": [
+        {
+          "author": "Admin",
+          "text": "Заменили на PNG 9 KB.",
+          "date": "2026-07-04"
+        }
+      ]
+    }
+  ]
+}

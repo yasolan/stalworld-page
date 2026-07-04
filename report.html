@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Сообщить о баге — STALWORLD</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <a href="index.html" class="logo"><span>STAL</span>WORLD</a>
+      <nav>
+        <a href="index.html">Баги</a>
+        <a href="report.html" class="active">Сообщить</a>
+        <a href="admin.html">Админка</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container form-page">
+    <h1>Сообщить о баге</h1>
+    <p>Заполните форму — откроется GitHub Issue с вашим отчётом. Нужен аккаунт GitHub.</p>
+
+    <div class="notice">
+      После отправки issue появится в репозитории <code id="repoName"></code>.
+      Админ может добавить его в публичный список через <a href="admin.html">админку</a>.
+    </div>
+
+    <div id="successNotice" class="notice hidden" style="border-color:var(--green);background:#1a2a1a">
+      GitHub Issue открыт в новой вкладке. Спасибо за репорт!
+    </div>
+
+    <form id="reportForm">
+      <div class="form-group">
+        <label for="title">Заголовок *</label>
+        <input type="text" id="title" required placeholder="Кратко: что сломалось">
+      </div>
+
+      <div class="form-group">
+        <label for="description">Описание *</label>
+        <textarea id="description" required placeholder="Что произошло? Что ожидали?"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="steps">Шаги воспроизведения</label>
+        <textarea id="steps" placeholder="1. Зайти на сервер&#10;2. ...&#10;3. Баг проявляется"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="category">Категория</label>
+        <select id="category"></select>
+      </div>
+
+      <div class="form-group">
+        <label for="priority">Приоритет (ваше мнение)</label>
+        <select id="priority"></select>
+      </div>
+
+      <div class="form-group">
+        <label for="version">Версия игры / сайта</label>
+        <input type="text" id="version" placeholder="STALKER V4, web, launcher...">
+      </div>
+
+      <div class="form-group">
+        <label for="platform">Платформа</label>
+        <input type="text" id="platform" placeholder="Windows 11, Android Chrome...">
+      </div>
+
+      <div class="form-group">
+        <label for="reporter">Ник или email</label>
+        <input type="text" id="reporter" placeholder="Как с вами связаться">
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Отправить на GitHub</button>
+        <a href="index.html" class="btn btn-secondary">Назад</a>
+      </div>
+    </form>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container"><span id="footerText"></span></div>
+  </footer>
+
+  <script src="js/config.js"></script>
+  <script>
+    document.getElementById('repoName').textContent = CONFIG.githubRepo;
+  </script>
+  <script src="js/report.js"></script>
+</body>
+</html>

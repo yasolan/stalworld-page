@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Админка — STALWORLD Bug Tracker</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <a href="index.html" class="logo"><span>STAL</span>WORLD</a>
+      <nav>
+        <a href="index.html">Баги</a>
+        <a href="report.html">Сообщить</a>
+        <a href="admin.html" class="active">Админка</a>
+      </nav>
+    </div>
+  </header>
+
+  <div id="loginScreen" class="container">
+    <div class="login-box">
+      <h1>Админка</h1>
+      <p>Редактирование списка багов. Пароль по умолчанию: <code>stalworld-admin</code> (смените в admin.js).</p>
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="adminPassword">Пароль</label>
+          <input type="password" id="adminPassword" required>
+        </div>
+        <p id="loginError" style="color:var(--red);font-size:0.85rem;margin-bottom:10px"></p>
+        <button type="submit" class="btn btn-primary">Войти</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="adminScreen" class="container hidden">
+    <section class="hero" style="padding-bottom:0">
+      <h1>Управление багами</h1>
+      <p>Редактируйте баги, скачайте JSON и замените файл <code>data/bugs.json</code> в репозитории.</p>
+      <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
+        <button id="btnNew" class="btn btn-secondary">+ Новый баг</button>
+        <button id="btnCopy" class="btn btn-secondary">Копировать JSON</button>
+        <button id="btnDownload" class="btn btn-secondary">Скачать bugs.json</button>
+        <button id="btnLogout" class="btn btn-danger">Выйти</button>
+      </div>
+    </section>
+
+    <div class="admin-grid">
+      <div class="admin-panel">
+        <h2>Список багов</h2>
+        <div id="adminBugList" class="admin-list"></div>
+      </div>
+
+      <div class="admin-panel">
+        <h2>Редактор</h2>
+        <form id="bugEditForm">
+          <input type="hidden" id="editIndex">
+          <div class="form-group">
+            <label for="editId">ID</label>
+            <input type="text" id="editId" required>
+          </div>
+          <div class="form-group">
+            <label for="editTitle">Заголовок</label>
+            <input type="text" id="editTitle" required>
+          </div>
+          <div class="form-group">
+            <label for="editDescription">Описание</label>
+            <textarea id="editDescription"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="editSteps">Шаги</label>
+            <textarea id="editSteps"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="editCategory">Категория</label>
+            <select id="editCategory"></select>
+          </div>
+          <div class="form-group">
+            <label for="editPriority">Приоритет</label>
+            <select id="editPriority"></select>
+          </div>
+          <div class="form-group">
+            <label for="editStatus">Статус</label>
+            <select id="editStatus"></select>
+          </div>
+          <div class="form-group">
+            <label for="editVersion">Версия</label>
+            <input type="text" id="editVersion">
+          </div>
+          <div class="form-group">
+            <label for="editPlatform">Платформа</label>
+            <input type="text" id="editPlatform">
+          </div>
+          <div class="form-group">
+            <label for="editReporter">Автор</label>
+            <input type="text" id="editReporter">
+          </div>
+          <div class="form-group">
+            <label for="editVotes">Голоса</label>
+            <input type="number" id="editVotes" value="0" min="0">
+          </div>
+          <button type="submit" class="btn btn-primary">Сохранить</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="admin-panel" style="margin-bottom:60px">
+      <h2>JSON для GitHub</h2>
+      <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:10px">
+        Скопируйте содержимое в <code>docs/data/bugs.json</code> и сделайте commit + push.
+      </p>
+      <textarea id="jsonOutput" readonly></textarea>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="container"><span id="footerText"></span></div>
+  </footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>
