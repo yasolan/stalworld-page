@@ -108,16 +108,18 @@ const UserProfile = {
     if (!bugs.length) {
       bugsEl.innerHTML = '<p class="muted">Репортов пока нет.</p>';
     } else {
-      bugsEl.innerHTML = bugs.map(b => `
-        <a href="bug.html?id=${encodeURIComponent(b.id)}" class="user-bug-item user-bug-item--${b.status}">
+      bugsEl.innerHTML = bugs.map(b => {
+        const bugId = b.id || b.docId;
+        return `
+        <a href="bug.html?id=${encodeURIComponent(bugId)}" class="user-bug-item user-bug-item--${b.status}">
           <div class="user-bug-item-top">
-            <span class="bug-id">${b.id}</span>
+            <span class="bug-id">${bugId}</span>
             ${statusBadge(b.status)} ${priorityBadge(b.priority)}
           </div>
-          <div class="user-bug-item-title">${escapeHtml(b.title)}</div>
+          <div class="user-bug-item-title">${escapeHtml(b.title || "Без названия")}</div>
           <div class="user-bug-item-meta">${formatDateShort(b.createdAt)} · ${b.commentCount || 0} сообщ.</div>
-        </a>
-      `).join("");
+        </a>`;
+      }).join("");
     }
 
     document.getElementById("userProfileLoading").classList.add("hidden");

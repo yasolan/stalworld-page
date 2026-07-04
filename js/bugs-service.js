@@ -1,4 +1,26 @@
 const BugsService = {
+  normalizeBug(data, docId) {
+    if (!data) return null;
+    const id = data.id || docId;
+    return {
+      ...data,
+      docId: docId || data.docId || id,
+      id,
+      status: data.status || "open",
+      priority: data.priority || "medium",
+      category: data.category || "other"
+    };
+  },
+
+  docId(bugOrId) {
+    if (!bugOrId) return "";
+    if (typeof bugOrId === "string") return bugOrId;
+    return bugOrId.docId || bugOrId.id || "";
+  },
+
+  mapDoc(d) {
+    return this.normalizeBug(d.data(), d.id);
+  },
   async getNextBugId() {
     const ref = FirebaseApp.db.collection("meta").doc("counters");
     return FirebaseApp.db.runTransaction(async (tx) => {
@@ -14,21 +36,21 @@ const BugsService = {
     const snap = await FirebaseApp.db.collection("bugs")
       .orderBy("createdAt", "desc")
       .get();
-    return snap.docs.map(d => ({ docId: d.id, ...d.data() }));
+    return snap.docs.map(d => this.mapDoc(d));
   },
 
   subscribeBugs(callback) {
     return FirebaseApp.db.collection("bugs")
       .orderBy("createdAt", "desc")
       .onSnapshot(snap => {
-        callback(snap.docs.map(d => ({ docId: d.id, ...d.data() })));
+        callback(snap.docs.map(d => this.mapDoc(d)));
       }, err => console.error("bugs subscribe:", err));
   },
 
   async getBug(bugId) {
     const snap = await FirebaseApp.db.collection("bugs").doc(bugId).get();
     if (!snap.exists) return null;
-    return { docId: snap.id, ...snap.data() };
+    return this.mapDoc(snap);
   },
 
   async createBug(data, user, profile) {
@@ -64,14 +86,13 @@ const BugsService = {
     await this.updateBug(bugId, { status });
   },
 
-  subscribeBug(bugId, callback) {
+  subscribeBug(bugId, callback, onError) {
     return FirebaseApp.db.collection("bugs").doc(bugId).onSnapshot(snap => {
-      if (!snap.exists) {
-        callback(null);
-        return;
-      }
-      callback({ docId: snap.id, ...snap.data() });
-    }, err => console.error("bug subscribe:", err));
+      callback(snap.exists ? this.mapDoc(snap) : null);
+    }, err => {
+      console.error("bug subscribe:", err);
+      if (onError) onError(err);
+    });
   },
 
   async getBugsByReporter(reporterId, reporterName) {
@@ -80,13 +101,13 @@ const BugsService = {
       const snap = await FirebaseApp.db.collection("bugs")
         .where("reporterId", "==", reporterId)
         .get();
-      bugs = snap.docs.map(d => ({ docId: d.id, ...d.data() }));
+      bugs = snap.docs.map(d => this.mapDoc(d));
     }
     if (!bugs.length && reporterName) {
       const snap = await FirebaseApp.db.collection("bugs")
         .where("reporter", "==", reporterName)
         .get();
-      bugs = snap.docs.map(d => ({ docId: d.id, ...d.data() }));
+      bugs = snap.docs.map(d => this.mapDoc(d));
     }
     return bugs.sort((a, b) => {
       const ta = a.createdAt?.toMillis?.() || 0;
@@ -138,6 +159,7 @@ const BugsService = {
       const { comments, ...rest } = bug;
       await FirebaseApp.db.collection("bugs").doc(id).set({
         ...rest,
+        id,
         commentCount: (comments || []).length,
         createdAt: firebase.firestore.Timestamp.fromDate(new Date(bug.createdAt || Date.now())),
         updatedAt: firebase.firestore.Timestamp.fromDate(new Date(bug.updatedAt || Date.now()))

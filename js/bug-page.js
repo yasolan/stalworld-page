@@ -19,7 +19,16 @@ function updateThreadStats(bug, replyCount) {
 }
 
 function renderBug(bug) {
+  if (!bug?.title) {
+    document.getElementById("bugLoading").classList.add("hidden");
+    document.getElementById("bugContent").classList.add("hidden");
+    document.getElementById("bugNotFound").textContent = "Баг повреждён или не найден (ID: " + (bug?.id || currentBugId) + ")";
+    document.getElementById("bugNotFound").classList.remove("hidden");
+    return;
+  }
+
   currentBug = bug;
+  currentBugId = BugsService.docId(bug);
   const author = bug.reporter || "—";
 
   document.getElementById("bugBanner").innerHTML = priorityBanner(bug.priority);
@@ -95,7 +104,7 @@ async function setBugStatus(status, label) {
   if (btn?.tagName === "BUTTON") btn.disabled = true;
 
   try {
-    await BugsService.updateBugStatus(currentBugId, status);
+    await BugsService.updateBugStatus(BugsService.docId(currentBug) || currentBugId, status);
     await Logger.write("admin.bug_status", label, { bugId: currentBugId, status });
     if (status === "closed") {
       setTimeout(() => {
@@ -158,16 +167,30 @@ async function initBugPage() {
     return;
   }
 
-  document.getElementById("bugLoading").classList.add("hidden");
-  document.getElementById("bugContent").classList.remove("hidden");
-
   bugUnsub = BugsService.subscribeBug(currentBugId, bug => {
+    document.getElementById("bugLoading").classList.add("hidden");
+
     if (!bug) {
       document.getElementById("bugContent").classList.add("hidden");
       document.getElementById("bugNotFound").classList.remove("hidden");
       return;
     }
-    renderBug(bug);
+
+    document.getElementById("bugNotFound").classList.add("hidden");
+    document.getElementById("bugContent").classList.remove("hidden");
+    try {
+      renderBug(bug);
+    } catch (ex) {
+      console.error(ex);
+      document.getElementById("bugContent").classList.add("hidden");
+      document.getElementById("bugNotFound").textContent = "Ошибка отображения бага";
+      document.getElementById("bugNotFound").classList.remove("hidden");
+    }
+  }, () => {
+    document.getElementById("bugLoading").classList.add("hidden");
+    document.getElementById("bugContent").classList.add("hidden");
+    document.getElementById("bugNotFound").textContent = "Не удалось загрузить баг";
+    document.getElementById("bugNotFound").classList.remove("hidden");
   });
 
   commentsUnsub = BugsService.subscribeComments(currentBugId, comments => {

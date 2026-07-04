@@ -32,12 +32,12 @@ function renderBugList(bugs) {
 
   empty.classList.add("hidden");
   list.innerHTML = visible.map(bug => `
-    <div class="bug-card bug-card--${bug.status} bug-card--priority-${bug.priority}" data-href="bug.html?id=${encodeURIComponent(bug.id)}" tabindex="0" role="link">
+    <div class="bug-card bug-card--${bug.status} bug-card--priority-${bug.priority}" data-href="bug.html?id=${encodeURIComponent(bug.id || bug.docId)}" tabindex="0" role="link">
       ${priorityBanner(bug.priority)}
       <div class="bug-card-top">
         <div class="bug-card-main">
           <div class="bug-card-head-row">
-            <span class="bug-id">${bug.id}</span>
+            <span class="bug-id">${bug.id || bug.docId}</span>
             ${priorityBadge(bug.priority, true)}
           </div>
           <div class="bug-title">${escapeHtml(bug.title)}</div>
