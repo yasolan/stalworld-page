@@ -33,4 +33,7 @@ function initNavAuth() {
   });
 }
 
-document.addEventListener("DOMContentLoaded", initNavAuth);
+document.addEventListener("DOMContentLoaded", () => {
+  if (typeof AuthGuard !== "undefined") AuthGuard.whenReady(initNavAuth);
+  else initNavAuth();
+});

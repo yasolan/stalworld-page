@@ -1,5 +1,14 @@
 document.getElementById("footerText").textContent = CONFIG.siteName;
 
+if (FirebaseApp.init()) {
+  AuthService.onAuthChange((user) => {
+    if (user) {
+      const redirect = new URLSearchParams(location.search).get("next") || "index.html";
+      window.location.replace(redirect);
+    }
+  });
+}
+
 document.getElementById("loginForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   const err = document.getElementById("loginError");

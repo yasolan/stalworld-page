@@ -288,4 +288,4 @@ async function initAdmin() {
   });
 }
 
-document.addEventListener("DOMContentLoaded", initAdmin);
+document.addEventListener("DOMContentLoaded", () => AuthGuard.whenReady(initAdmin));

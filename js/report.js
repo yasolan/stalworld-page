@@ -45,24 +45,13 @@ async function submitReport(e) {
   }
 }
 
-function showReportForm(show) {
-  document.getElementById("authRequired").classList.toggle("hidden", show);
-  document.getElementById("reportBlock").classList.toggle("hidden", !show);
-  document.getElementById("reportIntro").textContent = show
-    ? "Баг появится на сайте — можно обсуждать в комментариях."
-    : "Войдите в аккаунт, чтобы отправить репорт.";
-}
-
-function syncReportAuth(user) {
-  showReportForm(!!user);
-}
-
 function initReport() {
   document.getElementById("footerText").textContent = CONFIG.siteName;
   fillCategorySelect("category");
   fillPrioritySelect("priority", "medium");
   bindScreenshotPreview("screenshotUrl", "screenshotPreview");
   document.getElementById("reportForm").addEventListener("submit", submitReport);
+  document.getElementById("reportIntro").textContent = "Баг появится на сайте — можно обсуждать в комментариях.";
 
   if (!FirebaseApp.isConfigured()) {
     document.getElementById("reportIntro").textContent = "Firebase не настроен";
@@ -70,13 +59,6 @@ function initReport() {
   }
 
   FirebaseApp.init();
-  document.getElementById("reportIntro").textContent = "Проверка входа...";
-  AuthService.onAuthChange(syncReportAuth);
-
-  // На случай, если auth уже восстановлен до подписки
-  if (AuthService.currentUser()) {
-    syncReportAuth(AuthService.currentUser());
-  }
 }
 
-document.addEventListener("DOMContentLoaded", initReport);
+document.addEventListener("DOMContentLoaded", () => AuthGuard.whenReady(initReport));

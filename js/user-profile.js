@@ -127,4 +127,7 @@ const UserProfile = {
   }
 };
 
-document.addEventListener("DOMContentLoaded", () => UserProfile.init());
+document.addEventListener("DOMContentLoaded", () => {
+  if (typeof AuthGuard !== "undefined") AuthGuard.whenReady(() => UserProfile.init());
+  else UserProfile.init();
+});

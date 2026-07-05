@@ -262,4 +262,4 @@ async function initBugPage() {
   });
 }
 
-document.addEventListener("DOMContentLoaded", initBugPage);
+document.addEventListener("DOMContentLoaded", () => AuthGuard.whenReady(initBugPage));

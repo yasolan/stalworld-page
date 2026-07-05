@@ -26,6 +26,20 @@ body {
   min-height: 100vh;
 }
 
+body.auth-pending .site-header,
+body.auth-pending main,
+body.auth-pending .site-footer {
+  display: none !important;
+}
+
+body.auth-pending::after {
+  content: "Проверка входа...";
+  display: block;
+  text-align: center;
+  padding: 40vh 20px;
+  color: var(--text-muted);
+}
+
 a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
 

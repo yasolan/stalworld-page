@@ -32,13 +32,13 @@ service cloud.firestore {
     }
 
     match /bugs/{bugId} {
-      allow read: if true;
+      allow read: if request.auth != null;
       allow create: if request.auth != null;
       allow update, delete: if isAdmin();
     }
 
     match /bugs/{bugId}/comments/{commentId} {
-      allow read: if true;
+      allow read: if request.auth != null;
       allow create: if request.auth != null;
       allow update, delete: if isAdmin();
     }

@@ -1,5 +1,11 @@
 document.getElementById("footerText").textContent = CONFIG.siteName;
 
+if (FirebaseApp.init()) {
+  AuthService.onAuthChange((user) => {
+    if (user) window.location.replace("index.html");
+  });
+}
+
 document.getElementById("registerForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   const err = document.getElementById("registerError");
